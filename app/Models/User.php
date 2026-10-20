@@ -10,6 +10,18 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
+    public const ROLE_ADMINISTRATOR = 'administrator';
+
+    public const ROLE_MANAGER = 'manager';
+
+    public const ROLE_USER = 'user';
+
+    public const ROLES = [
+        self::ROLE_ADMINISTRATOR,
+        self::ROLE_MANAGER,
+        self::ROLE_USER,
+    ];
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
@@ -23,6 +35,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'role',
     ];
 
     /**
@@ -52,6 +65,28 @@ class User extends Authenticatable
         ];
     }
 
+    public function setIsAdminAttribute(bool $value): void
+    {
+        $this->attributes['is_admin'] = $value;
+        $this->attributes['role'] = $value ? self::ROLE_ADMINISTRATOR : self::ROLE_USER;
+    }
+
+    public function setRoleAttribute(string $value): void
+    {
+        $this->attributes['role'] = $value;
+        $this->attributes['is_admin'] = $value === self::ROLE_ADMINISTRATOR;
+    }
+
+    public function isAdministrator(): bool
+    {
+        return $this->role === self::ROLE_ADMINISTRATOR;
+    }
+
+    public function canManageTickets(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMINISTRATOR, self::ROLE_MANAGER], true);
+    }
+
     /**
      * Get the vacation requests for the user.
      */
@@ -76,4 +111,3 @@ class User extends Authenticatable
         return VacationBalance::getOrCreateForUser($this->id, $year);
     }
 }
-

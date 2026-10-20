@@ -115,9 +115,9 @@ it('does not allow employees to view another employee ticket', function () {
         ->assertForbidden();
 });
 
-it('allows only administrators to reply, assign, and update ticket status', function () {
+it('allows managers and administrators to reply, assign, and update ticket status', function () {
     $employee = User::factory()->create();
-    $admin = User::factory()->create(['is_admin' => true]);
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
     $ticket = ContractTicket::create([
         'user_id' => $employee->id,
         'subject' => 'Solicitação de atendimento',
@@ -132,11 +132,11 @@ it('allows only administrators to reply, assign, and update ticket status', func
         ])
         ->assertForbidden();
 
-    $this->actingAs($admin)
+    $this->actingAs($manager)
         ->patch(route('chamados.update', $ticket), [
             'status' => 'em_atendimento',
             'management_response' => 'Estamos verificando sua solicitação.',
-            'responsible_user_id' => $admin->id,
+            'responsible_user_id' => $manager->id,
         ])
         ->assertRedirect();
 
@@ -144,13 +144,42 @@ it('allows only administrators to reply, assign, and update ticket status', func
         'id' => $ticket->id,
         'status' => 'em_atendimento',
         'management_response' => 'Estamos verificando sua solicitação.',
-        'responsible_user_id' => $admin->id,
+        'responsible_user_id' => $manager->id,
     ]);
+});
+
+it('allows managers to view all tickets and download their attachments', function () {
+    Storage::fake('local');
+    $employee = User::factory()->create();
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $ticket = ContractTicket::create([
+        'user_id' => $employee->id,
+        'subject' => 'Chamado visível para o gestor',
+        'category' => 'documentacao',
+        'description' => 'Descrição.',
+    ]);
+    $attachment = $ticket->attachments()->create([
+        'original_name' => 'documento.pdf',
+        'file_path' => 'contract-ticket-attachments/'.$ticket->id.'/documento.pdf',
+        'mime_type' => 'application/pdf',
+        'file_size' => 10,
+    ]);
+    Storage::disk('local')->put($attachment->file_path, 'documento');
+
+    $this->actingAs($manager)
+        ->get(route('chamados.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('canManage', true)
+            ->where('isAdmin', false)
+            ->has('tickets.data', 1));
+
+    $this->get(route('chamados.show', $ticket))->assertOk();
+    $this->get(route('chamados.attachments.download', $attachment))->assertOk();
 });
 
 it('only allows administrators to delete tickets', function () {
     $employee = User::factory()->create();
-    $admin = User::factory()->create(['is_admin' => true]);
     $ticket = ContractTicket::create([
         'user_id' => $employee->id,
         'subject' => 'Chamado para excluir',
@@ -162,6 +191,12 @@ it('only allows administrators to delete tickets', function () {
         ->delete(route('chamados.destroy', $ticket))
         ->assertForbidden();
 
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $this->actingAs($manager)
+        ->delete(route('chamados.destroy', $ticket))
+        ->assertForbidden();
+
+    $admin = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
     $this->actingAs($admin)
         ->delete(route('chamados.destroy', $ticket))
         ->assertRedirect(route('chamados.index'));
@@ -169,7 +204,7 @@ it('only allows administrators to delete tickets', function () {
     $this->assertDatabaseMissing('contract_tickets', ['id' => $ticket->id]);
 });
 
-it('does not allow assigning a non-administrator as responsible', function () {
+it('does not allow assigning a regular user as responsible', function () {
     $employee = User::factory()->create();
     $admin = User::factory()->create(['is_admin' => true]);
     $ticket = ContractTicket::create([

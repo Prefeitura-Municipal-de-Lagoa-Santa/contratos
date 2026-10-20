@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('attachment');
     Route::get('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'show'])->name('chamados.show')->whereNumber('ticket');
     Route::patch('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'update'])
-        ->middleware('admin')
+        ->middleware('manager')
         ->name('chamados.update')
         ->whereNumber('ticket');
     Route::delete('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'destroy'])
@@ -82,11 +82,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/ferias/nova', [App\Http\Controllers\VacationRequestController::class, 'create'])->name('ferias.create');
     Route::post('/ferias', [App\Http\Controllers\VacationRequestController::class, 'store'])->name('ferias.store');
 
-    // Rotas de aprovação de férias (apenas admin) - Devem vir antes de /ferias/{id}
-    Route::middleware('admin')->group(function () {
+    // Aprovações de férias ficam disponíveis para gestores e administradores.
+    Route::middleware('manager')->group(function () {
         Route::get('/ferias/aprovacoes', [App\Http\Controllers\VacationRequestController::class, 'pendingApprovals'])->name('ferias.approvals');
         Route::patch('/ferias/{id}/aprovar', [App\Http\Controllers\VacationRequestController::class, 'approve'])->name('ferias.approve')->whereNumber('id');
         Route::patch('/ferias/{id}/rejeitar', [App\Http\Controllers\VacationRequestController::class, 'reject'])->name('ferias.reject')->whereNumber('id');
+    });
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/usuarios', [App\Http\Controllers\UserRoleController::class, 'index'])->name('users.index');
+        Route::patch('/usuarios/{user}/perfil', [App\Http\Controllers\UserRoleController::class, 'update'])->name('users.role.update');
     });
 
     Route::get('/ferias/{id}', [App\Http\Controllers\VacationRequestController::class, 'show'])->name('ferias.show')->whereNumber('id');

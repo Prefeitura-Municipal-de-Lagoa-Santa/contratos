@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ContractTicket;
 use App\Models\ContractTicketAttachment;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,14 +20,15 @@ class ContractTicketController extends Controller
         $user = $request->user();
         $tickets = ContractTicket::query()
             ->with(['user:id,name', 'responsible:id,name'])
-            ->when(!$user->is_admin, fn ($query) => $query->where('user_id', $user->id))
+            ->when(! $user->canManageTickets(), fn ($query) => $query->where('user_id', $user->id))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Chamados/Index', [
             'tickets' => $tickets,
-            'isAdmin' => (bool) $user->is_admin,
+            'canManage' => $user->canManageTickets(),
+            'isAdmin' => $user->isAdministrator(),
         ]);
     }
 
@@ -41,7 +43,7 @@ class ContractTicketController extends Controller
     {
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
-            'category' => ['required', 'string', 'in:' . implode(',', ContractTicket::CATEGORIES)],
+            'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
             'specifications' => [
                 Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
@@ -82,7 +84,7 @@ class ContractTicketController extends Controller
         ]);
 
         foreach ($request->file('attachments', []) as $file) {
-            $path = $file->store('contract-ticket-attachments/' . $ticket->id, 'local');
+            $path = $file->store('contract-ticket-attachments/'.$ticket->id, 'local');
 
             if ($path === false) {
                 throw new \RuntimeException('Não foi possível salvar um anexo do chamado.');
@@ -103,14 +105,15 @@ class ContractTicketController extends Controller
 
     public function show(Request $request, ContractTicket $ticket): Response
     {
-        abort_unless($request->user()->is_admin || $ticket->user_id === $request->user()->id, 403);
+        abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
 
         return Inertia::render('Chamados/Show', [
             'ticket' => $ticket->load(['user:id,name', 'responsible:id,name', 'attachments']),
-            'isAdmin' => (bool) $request->user()->is_admin,
+            'canManage' => $request->user()->canManageTickets(),
+            'isAdmin' => $request->user()->isAdministrator(),
             'statuses' => ContractTicket::STATUSES,
-            'responsibles' => \App\Models\User::query()
-                ->where('is_admin', true)
+            'responsibles' => User::query()
+                ->whereIn('role', [User::ROLE_ADMINISTRATOR, User::ROLE_MANAGER])
                 ->orderBy('name')
                 ->get(['id', 'name']),
         ]);
@@ -119,7 +122,7 @@ class ContractTicketController extends Controller
     public function downloadAttachment(Request $request, ContractTicketAttachment $attachment): StreamedResponse
     {
         abort_unless(
-            $request->user()->is_admin || $attachment->ticket()->where('user_id', $request->user()->id)->exists(),
+            $request->user()->canManageTickets() || $attachment->ticket()->where('user_id', $request->user()->id)->exists(),
             403
         );
         abort_unless(Storage::disk('local')->exists($attachment->file_path), 404, 'Anexo não encontrado.');
@@ -130,12 +133,12 @@ class ContractTicketController extends Controller
     public function update(Request $request, ContractTicket $ticket): RedirectResponse
     {
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', ContractTicket::STATUSES)],
+            'status' => ['required', 'string', 'in:'.implode(',', ContractTicket::STATUSES)],
             'management_response' => ['nullable', 'string', 'max:10000'],
             'responsible_user_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('users', 'id')->where('is_admin', true),
+                Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMINISTRATOR, User::ROLE_MANAGER]),
             ],
         ]);
 
@@ -147,7 +150,7 @@ class ContractTicketController extends Controller
     public function destroy(ContractTicket $ticket): RedirectResponse
     {
         foreach ($ticket->attachments as $attachment) {
-            if (!Storage::disk('local')->delete($attachment->file_path)) {
+            if (! Storage::disk('local')->delete($attachment->file_path)) {
                 throw new \RuntimeException('Não foi possível remover os anexos do chamado.');
             }
         }

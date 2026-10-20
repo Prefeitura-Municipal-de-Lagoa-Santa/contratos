@@ -13,27 +13,30 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import {
-    LayoutDashboard, 
-    FileText, 
-    Settings,
-    User,
-    Lock,
-    Palette,
-    Shield,
-    Users,
     CalendarDays,
     CalendarPlus,
     ClipboardCheck,
-    Package,
+    FileText,
+    LayoutDashboard,
     LifeBuoy,
+    Lock,
     MessageSquarePlus,
+    Package,
+    Palette,
+    Settings,
+    Shield,
+    User,
+    Users,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage();
-const isAdmin = computed(() => page.props.auth?.user?.is_admin ?? false);
+const isAdmin = computed(() => page.props.auth?.user?.role === 'administrator');
+const canManage = computed(() =>
+    ['administrator', 'manager'].includes(page.props.auth?.user?.role ?? ''),
+);
 
 const mainNavItems = computed<NavItem[]>(() => {
     const rhItems: NavItem[] = [
@@ -49,7 +52,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         },
     ];
 
-    if (isAdmin.value) {
+    if (canManage.value) {
         rhItems.push({
             title: 'Aprovar Férias',
             href: '/ferias/aprovacoes',
@@ -57,7 +60,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    return [
+    const items: NavItem[] = [
         {
             title: 'Dashboard',
             href: dashboard(),
@@ -121,6 +124,16 @@ const mainNavItems = computed<NavItem[]>(() => {
             ],
         },
     ];
+
+    if (isAdmin.value) {
+        items.splice(1, 0, {
+            title: 'Usuários e perfis',
+            href: '/usuarios',
+            icon: Shield,
+        });
+    }
+
+    return items;
 });
 </script>
 
@@ -129,17 +142,31 @@ const mainNavItems = computed<NavItem[]>(() => {
         <SidebarHeader class="sidebar-header">
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child class="sidebar-brand group/brand">
+                    <SidebarMenuButton
+                        size="lg"
+                        as-child
+                        class="sidebar-brand group/brand"
+                    >
                         <Link :href="dashboard()">
-                            <div class="flex items-center gap-3 w-full overflow-hidden">
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-700 shadow-md group-hover/brand:scale-110 transition-transform duration-300">
+                            <div
+                                class="flex w-full items-center gap-3 overflow-hidden"
+                            >
+                                <div
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-700 shadow-md transition-transform duration-300 group-hover/brand:scale-110"
+                                >
                                     <AppLogo class="h-6 w-6 text-white" />
                                 </div>
-                                <div class="flex flex-col flex-1 min-w-0 opacity-100 group-data-[collapsible=icon]:opacity-0 transition-opacity duration-300">
-                                    <span class="text-[9px] uppercase font-black text-primary-400 tracking-[0.2em] leading-none mb-1">
+                                <div
+                                    class="flex min-w-0 flex-1 flex-col opacity-100 transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0"
+                                >
+                                    <span
+                                        class="mb-1 text-[9px] font-black uppercase leading-none tracking-[0.2em] text-primary-400"
+                                    >
                                         PROCESSOS LICITATÓRIOS
                                     </span>
-                                    <span class="whitespace-nowrap font-black text-base leading-none bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+                                    <span
+                                        class="whitespace-nowrap bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-base font-black leading-none tracking-tight text-transparent"
+                                    >
                                         Processos Licitatórios
                                     </span>
                                 </div>
@@ -154,7 +181,10 @@ const mainNavItems = computed<NavItem[]>(() => {
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter v-if="page.props.auth?.user" class="sidebar-footer border-t border-gray-100 p-4">
+        <SidebarFooter
+            v-if="page.props.auth?.user"
+            class="sidebar-footer border-t border-gray-100 p-4"
+        >
             <NavUser />
         </SidebarFooter>
     </Sidebar>
@@ -166,20 +196,20 @@ const mainNavItems = computed<NavItem[]>(() => {
     @apply border-r border-gray-100 bg-white shadow-sm !important;
 }
 
-.sidebar-modern :deep([data-sidebar="sidebar"]) {
+.sidebar-modern :deep([data-sidebar='sidebar']) {
     @apply bg-white !important;
 }
 
 .sidebar-header {
-    @apply px-4 pt-8 pb-2 border-none bg-white !important;
+    @apply border-none bg-white px-4 pb-2 pt-8 !important;
 }
 
 .sidebar-brand {
-    @apply h-auto py-2 px-1 hover:bg-transparent !important;
+    @apply h-auto px-1 py-2 hover:bg-transparent !important;
 }
 
 .sidebar-content {
-    @apply flex-1 overflow-y-auto px-2 bg-white !important;
+    @apply flex-1 overflow-y-auto bg-white px-2 !important;
 }
 
 .sidebar-content::-webkit-scrollbar {
@@ -191,10 +221,10 @@ const mainNavItems = computed<NavItem[]>(() => {
 }
 
 .sidebar-content::-webkit-scrollbar-thumb {
-    @apply bg-gray-200 rounded-full hover:bg-gray-300;
+    @apply rounded-full bg-gray-200 hover:bg-gray-300;
 }
 
 .sidebar-footer {
-    @apply bg-white border-t border-gray-50 p-2 mt-auto !important;
+    @apply mt-auto border-t border-gray-50 bg-white p-2 !important;
 }
 </style>

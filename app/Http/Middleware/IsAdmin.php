@@ -15,7 +15,7 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->is_admin) {
+        if (! $request->user() || ! $request->user()->isAdministrator()) {
             abort(403, 'Acesso não autorizado. Apenas administradores podem acessar esta página.');
         }
 
