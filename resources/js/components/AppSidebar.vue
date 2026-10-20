@@ -71,11 +71,6 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: FileText,
             items: [
                 {
-                    title: 'Listar Documentos',
-                    href: '/contratos',
-                    icon: FileText,
-                },
-                {
                     title: 'Carga Patrimonial',
                     href: '/patrimonios',
                     icon: Package,
@@ -200,8 +195,20 @@ const mainNavItems = computed<NavItem[]>(() => {
     @apply bg-white !important;
 }
 
+.dark .sidebar-modern {
+    @apply border-gray-700 bg-slate-800 !important;
+}
+
+.dark .sidebar-modern :deep([data-sidebar='sidebar']) {
+    @apply bg-slate-800 text-slate-100 !important;
+}
+
 .sidebar-header {
     @apply border-none bg-white px-4 pb-2 pt-8 !important;
+}
+
+.dark .sidebar-header {
+    @apply bg-slate-800 !important;
 }
 
 .sidebar-brand {
@@ -210,6 +217,10 @@ const mainNavItems = computed<NavItem[]>(() => {
 
 .sidebar-content {
     @apply flex-1 overflow-y-auto bg-white px-2 !important;
+}
+
+.dark .sidebar-content {
+    @apply bg-slate-800 !important;
 }
 
 .sidebar-content::-webkit-scrollbar {
@@ -226,5 +237,9 @@ const mainNavItems = computed<NavItem[]>(() => {
 
 .sidebar-footer {
     @apply mt-auto border-t border-gray-50 bg-white p-2 !important;
+}
+
+.dark .sidebar-footer {
+    @apply border-gray-700 bg-slate-800 !important;
 }
 </style>
