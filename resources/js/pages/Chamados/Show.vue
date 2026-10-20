@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Download, LifeBuoy, Paperclip } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    Check,
+    Download,
+    LifeBuoy,
+    Paperclip,
+    X,
+} from 'lucide-vue-next';
 
 const props = defineProps({
     ticket: Object,
@@ -15,6 +22,8 @@ const statusLabels = {
     aberto: 'Aberto',
     em_atendimento: 'Em atendimento',
     resolvido: 'Resolvido',
+    aprovado: 'Aprovado',
+    recusado: 'Recusado',
 };
 
 const categoryLabels = {
@@ -35,8 +44,16 @@ const form = useForm({
     responsible_user_id: props.ticket.responsible_user_id ?? '',
 });
 
+const isFinalDecision = ['aprovado', 'recusado'].includes(props.ticket.status);
+const decisionForm = useForm({ status: '' });
 const formatDate = (value) => new Date(value).toLocaleString('pt-BR');
 const submit = () => form.patch(`/chamados/${props.ticket.id}`);
+const decide = (status) =>
+    decisionForm
+        .transform(() => ({ status }))
+        .patch(`/chamados/${props.ticket.id}/decisao`, {
+            preserveScroll: true,
+        });
 </script>
 
 <template>
@@ -83,10 +100,41 @@ const submit = () => form.patch(`/chamados/${props.ticket.id}`);
                             {{ categoryLabels[ticket.category] }}
                         </span>
                         <span
-                            class="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-700"
+                            :class="[
+                                'rounded-full px-3 py-1 text-sm font-semibold',
+                                ticket.status === 'aprovado'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : ticket.status === 'recusado'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-gray-100 text-gray-700',
+                            ]"
                         >
                             {{ statusLabels[ticket.status] }}
                         </span>
+                    </div>
+
+                    <div
+                        v-if="canManage && !isFinalDecision"
+                        class="flex flex-wrap gap-3 border-b border-gray-100 pb-6"
+                    >
+                        <button
+                            type="button"
+                            :disabled="decisionForm.processing"
+                            @click="decide('aprovado')"
+                            class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <Check class="h-4 w-4" />
+                            Aprovar chamado
+                        </button>
+                        <button
+                            type="button"
+                            :disabled="decisionForm.processing"
+                            @click="decide('recusado')"
+                            class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <X class="h-4 w-4" />
+                            Recusar chamado
+                        </button>
                     </div>
 
                     <div
@@ -182,7 +230,7 @@ const submit = () => form.patch(`/chamados/${props.ticket.id}`);
                     </div>
 
                     <form
-                        v-if="canManage"
+                        v-if="canManage && !isFinalDecision"
                         @submit.prevent="submit"
                         class="space-y-5 border-t border-gray-100 pt-6"
                     >

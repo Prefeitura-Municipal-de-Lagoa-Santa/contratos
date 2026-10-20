@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -38,6 +39,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'update'])
         ->middleware('manager')
         ->name('chamados.update')
+        ->whereNumber('ticket');
+    Route::patch('/chamados/{ticket}/decisao', [App\Http\Controllers\ContractTicketController::class, 'decide'])
+        ->middleware('manager')
+        ->name('chamados.decide')
         ->whereNumber('ticket');
     Route::delete('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'destroy'])
         ->middleware('admin')

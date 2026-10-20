@@ -24,6 +24,19 @@ class ContractTicket extends Model
         'aberto',
         'em_atendimento',
         'resolvido',
+        'aprovado',
+        'recusado',
+    ];
+
+    public const MANAGEMENT_STATUSES = [
+        'aberto',
+        'em_atendimento',
+        'resolvido',
+    ];
+
+    public const DECISION_STATUSES = [
+        'aprovado',
+        'recusado',
     ];
 
     protected $fillable = [

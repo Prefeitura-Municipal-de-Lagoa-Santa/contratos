@@ -148,6 +148,48 @@ it('allows managers and administrators to reply, assign, and update ticket statu
     ]);
 });
 
+it('allows managers and administrators to approve or refuse a ticket once', function () {
+    $employee = User::factory()->create();
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $admin = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
+    $approvalTicket = ContractTicket::create([
+        'user_id' => $employee->id,
+        'subject' => 'Solicitação para aprovar',
+        'category' => 'documentacao',
+        'description' => 'Descrição.',
+    ]);
+    $refusalTicket = ContractTicket::create([
+        'user_id' => $employee->id,
+        'subject' => 'Solicitação para recusar',
+        'category' => 'documentacao',
+        'description' => 'Descrição.',
+    ]);
+
+    $this->actingAs($employee)
+        ->patch(route('chamados.decide', $approvalTicket), ['status' => 'aprovado'])
+        ->assertForbidden();
+
+    $this->actingAs($manager)
+        ->patch(route('chamados.decide', $approvalTicket), ['status' => 'aprovado'])
+        ->assertRedirect();
+
+    $this->actingAs($admin)
+        ->patch(route('chamados.decide', $refusalTicket), ['status' => 'recusado'])
+        ->assertRedirect();
+
+    $this->patch(route('chamados.decide', $approvalTicket), ['status' => 'recusado'])
+        ->assertStatus(409);
+
+    $this->assertDatabaseHas('contract_tickets', [
+        'id' => $approvalTicket->id,
+        'status' => 'aprovado',
+    ]);
+    $this->assertDatabaseHas('contract_tickets', [
+        'id' => $refusalTicket->id,
+        'status' => 'recusado',
+    ]);
+});
+
 it('allows managers to view all tickets and download their attachments', function () {
     Storage::fake('local');
     $employee = User::factory()->create();

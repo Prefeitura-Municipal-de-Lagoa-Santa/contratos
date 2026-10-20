@@ -13,12 +13,16 @@ const statusLabels = {
     aberto: 'Aberto',
     em_atendimento: 'Em atendimento',
     resolvido: 'Resolvido',
+    aprovado: 'Aprovado',
+    recusado: 'Recusado',
 };
 
 const statusStyles = {
     aberto: 'bg-amber-100 text-amber-800',
     em_atendimento: 'bg-blue-100 text-blue-800',
     resolvido: 'bg-emerald-100 text-emerald-800',
+    aprovado: 'bg-emerald-100 text-emerald-800',
+    recusado: 'bg-red-100 text-red-800',
 };
 
 const categoryLabels = {

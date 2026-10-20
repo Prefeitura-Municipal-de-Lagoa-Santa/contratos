@@ -111,7 +111,7 @@ class ContractTicketController extends Controller
             'ticket' => $ticket->load(['user:id,name', 'responsible:id,name', 'attachments']),
             'canManage' => $request->user()->canManageTickets(),
             'isAdmin' => $request->user()->isAdministrator(),
-            'statuses' => ContractTicket::STATUSES,
+            'statuses' => ContractTicket::MANAGEMENT_STATUSES,
             'responsibles' => User::query()
                 ->whereIn('role', [User::ROLE_ADMINISTRATOR, User::ROLE_MANAGER])
                 ->orderBy('name')
@@ -132,8 +132,10 @@ class ContractTicketController extends Controller
 
     public function update(Request $request, ContractTicket $ticket): RedirectResponse
     {
+        abort_if(in_array($ticket->status, ContractTicket::DECISION_STATUSES, true), 409, 'O chamado já foi decidido.');
+
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:'.implode(',', ContractTicket::STATUSES)],
+            'status' => ['required', 'string', 'in:'.implode(',', ContractTicket::MANAGEMENT_STATUSES)],
             'management_response' => ['nullable', 'string', 'max:10000'],
             'responsible_user_id' => [
                 'nullable',
@@ -145,6 +147,24 @@ class ContractTicketController extends Controller
         $ticket->update($validated);
 
         return back()->with('success', 'Chamado atualizado com sucesso.');
+    }
+
+    public function decide(Request $request, ContractTicket $ticket): RedirectResponse
+    {
+        abort_if(in_array($ticket->status, ContractTicket::DECISION_STATUSES, true), 409, 'O chamado já foi decidido.');
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:'.implode(',', ContractTicket::DECISION_STATUSES)],
+        ]);
+
+        $ticket->update($validated);
+
+        return back()->with(
+            'success',
+            $ticket->status === 'aprovado'
+                ? 'Chamado aprovado com sucesso.'
+                : 'Chamado recusado com sucesso.',
+        );
     }
 
     public function destroy(ContractTicket $ticket): RedirectResponse
