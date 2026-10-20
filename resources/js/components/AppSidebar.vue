@@ -14,23 +14,21 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { 
+import {
     LayoutDashboard, 
     FileText, 
-    FilePlus, 
     Settings,
     User,
     Lock,
     Palette,
     Shield,
-    Mail,
-    MailPlus,
-    FileStack,
     Users,
     CalendarDays,
     CalendarPlus,
     ClipboardCheck,
     Package,
+    LifeBuoy,
+    MessageSquarePlus,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -75,34 +73,19 @@ const mainNavItems = computed<NavItem[]>(() => {
                     icon: FileText,
                 },
                 {
-                    title: 'Novo Contrato',
-                    href: '/contratos/novo',
-                    icon: FilePlus,
-                },
-                {
-                    title: 'Comunicação Interna',
-                    href: '/comunicacoes-internas',
-                    icon: Mail,
-                },
-                {
-                    title: 'Nova Comunicação',
-                    href: '/comunicacoes-internas/nova',
-                    icon: MailPlus,
-                },
-                {
-                    title: 'Ofícios',
-                    href: '/oficios',
-                    icon: FileStack,
-                },
-                {
-                    title: 'Novo Ofício',
-                    href: '/oficios/novo',
-                    icon: FileStack,
-                },
-                {
                     title: 'Carga Patrimonial',
                     href: '/patrimonios',
                     icon: Package,
+                },
+                {
+                    title: 'Chamados',
+                    href: '/chamados',
+                    icon: LifeBuoy,
+                },
+                {
+                    title: 'Abrir Chamado',
+                    href: '/chamados/novo',
+                    icon: MessageSquarePlus,
                 },
             ],
         },

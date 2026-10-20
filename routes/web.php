@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,66 +8,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $contracts = \App\Models\Contract::query();
-
-    // Contagem por status
-    $activeCount = \App\Models\Contract::where('status', 'Ativo')->count();
-    $pendingCount = \App\Models\Contract::whereIn('status', ['Pendente', 'Em Análise'])->count();
-    $completedCount = \App\Models\Contract::where('status', 'Encerrado')->count();
-
-    // Contratos vencendo em 30 dias
-    $expiringCount = \App\Models\Contract::where('status', 'Ativo')
-        ->whereBetween('end_date', [now(), now()->addDays(30)])
-        ->count();
-
-    // Contratos recentes
-    $recentContracts = \App\Models\Contract::with(['supplier', 'contractType'])
-        ->latest()
-        ->take(5)
-        ->get();
-
-    // Dados para os gráficos
-    $statusData = [
-        'active' => $activeCount,
-        'pending' => $pendingCount,
-        'completed' => $completedCount,
-        'expired' => $expiringCount,
-    ];
-
-    // Dados de timeline (últimos 6 meses)
-    $timelineLabels = [];
-    $timelineData = [];
-    for ($i = 5; $i >= 0; $i--) {
-        $date = now()->subMonths($i);
-        $timelineLabels[] = $date->translatedFormat('M');
-        $timelineData[] = \App\Models\Contract::whereMonth('created_at', $date->month)
-            ->whereYear('created_at', $date->year)
-            ->count();
-    }
-
-    // Dados por tipo de contrato
-    $typeStats = \App\Models\ContractType::withCount('contracts')
-        ->orderByDesc('contracts_count')
-        ->take(5)
-        ->get();
-    $typeLabels = $typeStats->pluck('name')->toArray();
-    $typeData = $typeStats->pluck('contracts_count')->toArray();
-
-    return Inertia::render('Dashboard', [
-        'stats' => [
-            'active' => $activeCount,
-            'pending' => $pendingCount,
-            'completed' => $completedCount,
-            'expiring' => $expiringCount,
-            'total' => \App\Models\Contract::count(),
-        ],
-        'recentContracts' => $recentContracts,
-        'statusData' => $statusData,
-        'timelineLabels' => $timelineLabels,
-        'timelineData' => $timelineData,
-        'typeLabels' => $typeLabels ?: ['Sem dados'],
-        'typeData' => $typeData ?: [0],
-    ]);
+    return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -87,6 +26,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/contratos/arquivos/{file}/download', [App\Http\Controllers\ContractFileController::class, 'download'])->name('contract-files.download');
     Route::get('/contratos/arquivos/{file}/preview', [App\Http\Controllers\ContractFileController::class, 'preview'])->name('contract-files.preview');
     Route::delete('/contratos/arquivos/{file}', [App\Http\Controllers\ContractFileController::class, 'destroy'])->name('contract-files.destroy');
+
+    // Contract support tickets
+    Route::get('/chamados', [App\Http\Controllers\ContractTicketController::class, 'index'])->name('chamados.index');
+    Route::get('/chamados/novo', [App\Http\Controllers\ContractTicketController::class, 'create'])->name('chamados.create');
+    Route::post('/chamados', [App\Http\Controllers\ContractTicketController::class, 'store'])->name('chamados.store');
+    Route::get('/chamados/anexos/{attachment}/download', [App\Http\Controllers\ContractTicketController::class, 'downloadAttachment'])
+        ->name('chamados.attachments.download')
+        ->whereNumber('attachment');
+    Route::get('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'show'])->name('chamados.show')->whereNumber('ticket');
+    Route::patch('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'update'])
+        ->middleware('admin')
+        ->name('chamados.update')
+        ->whereNumber('ticket');
+    Route::delete('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'destroy'])
+        ->middleware('admin')
+        ->name('chamados.destroy')
+        ->whereNumber('ticket');
 
     // Settings routes
     Route::prefix('settings')->group(function () {
@@ -140,4 +96,4 @@ Route::middleware('auth')->group(function () {
     Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
