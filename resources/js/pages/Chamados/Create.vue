@@ -75,7 +75,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
 </script>
 
 <template>
-    <Head title="Abrir chamado" />
+    <Head title="Abrir requisição" />
 
     <AppLayout>
         <div
@@ -91,7 +91,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                     class="mb-6 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Voltar para chamados
+                    Voltar para Requisições
                 </Link>
 
                 <div class="mb-7 flex items-center gap-4 sm:mb-8">
@@ -104,7 +104,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <h1
                             class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
                         >
-                            Abrir chamado
+                            Abrir Requisição
                         </h1>
                         <p
                             class="mt-1 text-sm text-slate-600 dark:text-slate-400 sm:text-base"
@@ -123,7 +123,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <FieldHelp
                             field-id="subject"
                             label="Assunto"
-                            description="Resuma em poucas palavras o motivo principal do chamado."
+                            description="Resuma em poucas palavras o motivo principal da Requisição."
                         />
                         <input
                             id="subject"
@@ -248,7 +248,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <FieldHelp
                             field-id="description"
                             label="Descreva o que precisa"
-                            description="Acrescente contexto, prazos, contrato relacionado ou outras informações que ajudem a equipe a atender o chamado."
+                            description="Acrescente contexto, prazos, contrato relacionado ou outras informações que ajudem a equipe a atender a Requisição."
                         />
                         <textarea
                             id="description"
@@ -270,8 +270,8 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                     <div>
                         <FieldHelp
                             field-id="attachments"
-                            label="Anexos (opcional)"
-                            description="Anexe documentos que ajudem a analisar o pedido, como propostas, planilhas ou imagens. São aceitos até 5 arquivos de até 10 MB cada."
+                            label="Anexos (obrigatório)"
+                            description="Anexe o DFD (Documento de Formalização da Demanda) neste campo. O envio de pelo menos um arquivo PDF é obrigatório."
                         />
                         <label
                             for="attachments"
@@ -290,14 +290,14 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             <span
                                 class="mt-1 text-xs text-slate-500 dark:text-slate-400"
                             >
-                                PDF, DOC, DOCX, XLS, XLSX, PNG ou JPG · até 5
-                                arquivos de 10 MB
+                                Anexe o DFD em PDF · obrigatório
                             </span>
                             <input
                                 id="attachments"
                                 type="file"
                                 multiple
-                                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                                accept=".pdf,application/pdf"
+                                required
                                 @change="selectFiles"
                                 class="sr-only"
                             />
@@ -377,7 +377,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 {{
                                     form.processing
                                         ? 'Enviando...'
-                                        : 'Enviar chamado'
+                                        : 'Enviar Requisição'
                                 }}
                             </button>
                         </div>

@@ -63,8 +63,8 @@ class ContractTicketController extends Controller
                 'string',
                 'max:100',
             ],
-            'attachments' => ['sometimes', 'array', 'max:5'],
-            'attachments.*' => ['file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg'],
+            'attachments' => ['required', 'array', 'min:1', 'max:5'],
+            'attachments.*' => ['required', 'file', 'max:10240', 'mimes:pdf', 'extensions:pdf'],
         ]);
 
         $ticket = ContractTicket::create([

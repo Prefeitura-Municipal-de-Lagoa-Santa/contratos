@@ -15,6 +15,7 @@ it('allows an employee to create and view their own contract ticket', function (
             'subject' => 'Dúvida sobre contrato',
             'category' => 'contrato',
             'description' => 'Preciso de orientação sobre o contrato.',
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
         ->assertRedirect();
 
@@ -42,13 +43,14 @@ it('requires and stores specifications, justification, and ficha for contract re
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), $baseTicket)
-        ->assertSessionHasErrors(['specifications', 'justification', 'ficha']);
+        ->assertSessionHasErrors(['specifications', 'justification', 'ficha', 'attachments']);
 
     $this->post(route('chamados.store'), [
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
         'ficha' => 'Ficha 123',
+        'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
     ])->assertRedirect();
 
     $this->assertDatabaseHas('contract_tickets', [
@@ -68,6 +70,7 @@ it('does not require contract specifications and justification for other ticket 
             'subject' => 'Dúvida de documentação',
             'category' => 'documentacao',
             'description' => 'Preciso de orientação.',
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
         ->assertRedirect();
 
@@ -88,6 +91,7 @@ it('allows opening a renewal ticket without contract specifications and justific
             'subject' => 'Renovação de contrato',
             'category' => 'renovacao',
             'description' => 'Solicito avaliar a renovação.',
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
         ->assertRedirect();
 
@@ -311,8 +315,16 @@ it('prevents users from downloading attachments belonging to another user', func
         ->assertForbidden();
 });
 
-it('validates ticket attachment count, size, and file type', function () {
+it('requires at least one PDF attachment and rejects other file types', function () {
     $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Chamado sem anexo',
+            'category' => 'outro',
+            'description' => 'Descrição.',
+        ])
+        ->assertSessionHasErrors('attachments');
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), [

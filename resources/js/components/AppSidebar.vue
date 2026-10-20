@@ -72,12 +72,12 @@ const mainNavItems = computed<NavItem[]>(() => {
                     icon: Package,
                 },
                 {
-                    title: 'Chamados',
+                    title: 'Requisições',
                     href: '/chamados',
                     icon: LifeBuoy,
                 },
                 {
-                    title: 'Abrir Chamado',
+                    title: 'Abrir Requisição',
                     href: '/chamados/novo',
                     icon: MessageSquarePlus,
                 },

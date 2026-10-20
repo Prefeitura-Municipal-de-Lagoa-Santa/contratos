@@ -57,7 +57,7 @@ const decide = (status) =>
 </script>
 
 <template>
-    <Head :title="`Chamado #${ticket.id}`" />
+    <Head :title="`Requisição #${ticket.id}`" />
 
     <AppLayout>
         <div
@@ -69,7 +69,7 @@ const decide = (status) =>
                     class="mb-5 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Voltar para chamados
+                    Voltar para Requisições
                 </Link>
 
                 <header class="mb-7 flex items-center gap-4">
@@ -80,7 +80,7 @@ const decide = (status) =>
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-indigo-600">
-                            Chamado #{{ ticket.id }}
+                            Requisição #{{ ticket.id }}
                         </p>
                         <h1
                             class="text-2xl font-bold tracking-tight text-gray-900"
@@ -124,7 +124,7 @@ const decide = (status) =>
                             class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <Check class="h-4 w-4" />
-                            Aprovar chamado
+                            Aprovar Requisição
                         </button>
                         <button
                             type="button"
@@ -133,7 +133,7 @@ const decide = (status) =>
                             class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <X class="h-4 w-4" />
-                            Recusar chamado
+                            Recusar Requisição
                         </button>
                     </div>
 
@@ -235,7 +235,7 @@ const decide = (status) =>
                         class="space-y-5 border-t border-gray-100 pt-6"
                     >
                         <h2 class="text-lg font-semibold text-gray-900">
-                            Atendimento do chamado
+                            Atendimento da Requisição
                         </h2>
                         <div>
                             <label
