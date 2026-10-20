@@ -1,88 +1,116 @@
 <script setup lang="ts">
-import { FileText } from 'lucide-vue-next';
+import { FileText, ShieldCheck } from 'lucide-vue-next';
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col md:flex-row overflow-hidden bg-white">
-        <!-- Left Panel: Institutional Branding -->
-        <div class="hidden md:flex md:w-[55%] lg:w-[60%] relative overflow-hidden bg-gradient-to-br from-[#1e293b] via-[#0f172a] to-[#020617] items-center justify-center p-12">
-            <!-- Background Decorative Elements -->
-            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500 rounded-full blur-[120px]"></div>
-                <div class="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-indigo-500 rounded-full blur-[100px]"></div>
+    <main class="min-h-screen bg-slate-50 md:grid md:grid-cols-[1.05fr_0.95fr]">
+        <section
+            class="relative isolate flex min-h-[220px] items-center overflow-hidden bg-slate-950 px-6 py-8 text-white sm:px-10 md:min-h-screen md:justify-center md:px-12 md:py-16"
+        >
+            <div
+                aria-hidden="true"
+                class="absolute inset-0 -z-10 overflow-hidden"
+            >
+                <div
+                    class="absolute -left-40 -top-40 h-[30rem] w-[30rem] rounded-full bg-blue-600/20 blur-[100px]"
+                />
+                <div
+                    class="absolute -bottom-48 -right-32 h-[32rem] w-[32rem] rounded-full bg-indigo-500/20 blur-[110px]"
+                />
+                <div
+                    class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[size:28px_28px] opacity-30"
+                />
             </div>
 
-            <div class="relative z-10 text-center max-w-xl">
-                <!-- Unified Institutional Logo -->
-                <div class="flex items-center justify-center mb-12">
-                    <img src="/images/logos-completas.png" alt="Prefeitura Municipal de Lagoa Santa" class="h-32 w-auto drop-shadow-2xl brightness-110" />
-                </div>
-
-                <!-- Titles -->
-                <div class="space-y-4 mb-16">
-                    <h1 class="text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        Prefeitura Municipal de <br/>
-                        <span class="text-blue-400">Lagoa Santa</span>
-                    </h1>
-                    <div class="h-1 w-24 bg-blue-500 mx-auto rounded-full"></div>
-                    <h2 class="text-xl lg:text-2xl font-medium text-slate-300">
-                        Sistema de Processos Licitatórios
-                    </h2>
-                    <p class="text-slate-400 text-lg">
-                        Gerencie e organize contratos, comunicações e ofícios de forma simples e eficiente.
-                    </p>
-                </div>
-
-                <!-- Illustration placeholder - using a clean SVG/Icon group -->
-                <div class="relative mt-auto">
-                    <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl inline-block transform -rotate-1 hover:rotate-0 transition-transform duration-500">
-                        <div class="flex items-center gap-4 text-white/80 opacity-60">
-                            <div class="p-4 bg-blue-500/20 rounded-2xl">
-                                <FileText class="w-12 h-12 text-blue-400" />
-                            </div>
-                            <div class="flex flex-col text-left">
-                                <span class="text-sm font-bold uppercase tracking-wider text-blue-400">Módulo Administrativo</span>
-                                <span class="text-xl font-medium">Controle de Documentos 3.0</span>
-                            </div>
-                        </div>
+            <div class="w-full max-w-xl">
+                <div
+                    class="mb-6 flex items-center gap-4 md:mb-12 md:flex-col md:items-start"
+                >
+                    <img
+                        src="/images/logos-completas.png"
+                        alt="Prefeitura Municipal de Lagoa Santa"
+                        class="h-14 w-auto object-contain drop-shadow-xl md:h-20"
+                    />
+                    <div>
+                        <p
+                            class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300"
+                        >
+                            Prefeitura Municipal
+                        </p>
+                        <h1
+                            class="mt-1 text-xl font-bold tracking-tight sm:text-2xl md:mt-3 md:text-4xl"
+                        >
+                            Lagoa Santa
+                        </h1>
                     </div>
                 </div>
-            </div>
 
-            <!-- Footer for Left Column -->
-            <div class="absolute bottom-8 left-0 w-full text-center">
-                <p class="text-slate-500 text-sm font-medium tracking-wide">
-                    Prefeitura Municipal de Lagoa Santa © 2026
-                </p>
-            </div>
-        </div>
+                <div class="hidden md:block">
+                    <p
+                        class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-blue-100"
+                    >
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        Plataforma institucional
+                    </p>
+                    <h2
+                        class="max-w-lg text-4xl font-bold leading-tight tracking-tight lg:text-5xl"
+                    >
+                        Processos licitatórios
+                        <span class="mt-1 block text-blue-400">
+                            com mais clareza e agilidade.
+                        </span>
+                    </h2>
+                    <p class="mt-5 max-w-lg text-base leading-7 text-slate-300">
+                        Um espaço único para organizar contratos, solicitações e
+                        documentos da administração municipal.
+                    </p>
 
-        <!-- Right Panel: Login Form Area -->
-        <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-slate-50 relative">
-            <div class="absolute inset-0 bg-grid-slate-200/[0.3] pointer-events-none"></div>
-            
-            <div class="w-full max-w-md relative z-10">
-                <!-- Mobile Logo -->
-                <div class="md:hidden text-center mb-8">
-                    <img src="/images/logos-completas.png" alt="Logo" class="h-20 mx-auto mb-4" />
-                    <h2 class="text-2xl font-bold text-slate-900">Processos Licitatórios</h2>
+                    <div
+                        class="mt-10 inline-flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-4 shadow-2xl shadow-black/10 backdrop-blur"
+                    >
+                        <span
+                            class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300"
+                        >
+                            <FileText class="h-6 w-6" />
+                        </span>
+                        <div>
+                            <p class="text-sm font-semibold text-white">
+                                Gestão em um só lugar
+                            </p>
+                            <p class="mt-1 text-xs text-slate-400">
+                                Acesso seguro para servidores
+                            </p>
+                        </div>
+                        <ShieldCheck class="ml-4 h-5 w-5 text-emerald-300" />
+                    </div>
                 </div>
 
-                <slot />
+                <p
+                    class="absolute bottom-6 left-6 hidden text-xs text-slate-500 md:left-12 md:block"
+                >
+                    © {{ new Date().getFullYear() }} Prefeitura Municipal de
+                    Lagoa Santa
+                </p>
             </div>
-        </div>
-    </div>
+        </section>
+
+        <section
+            class="relative flex min-h-[calc(100vh-220px)] items-center justify-center overflow-hidden px-5 py-10 sm:px-8 md:min-h-screen md:px-10 md:py-14"
+        >
+            <div
+                aria-hidden="true"
+                class="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-blue-100/70 blur-3xl"
+            />
+            <div
+                class="relative z-10 w-full max-w-[440px] animate-[fade-in_500ms_ease-out]"
+            >
+                <slot />
+                <p
+                    class="mt-6 text-center text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400"
+                >
+                    Desenvolvido pela Prefeitura Municipal de Lagoa Santa
+                </p>
+            </div>
+        </section>
+    </main>
 </template>
-
-<style scoped>
-.bg-grid-slate-200 {
-    background-image: radial-gradient(circle, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
-}
-
-/* Base animations */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-}
-</style>

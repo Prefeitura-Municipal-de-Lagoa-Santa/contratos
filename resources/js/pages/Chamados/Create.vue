@@ -2,7 +2,15 @@
 import FieldHelp from '@/components/FieldHelp.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, LifeBuoy, Paperclip, X } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    CheckCircle2,
+    LifeBuoy,
+    Paperclip,
+    Send,
+    ShieldCheck,
+    X,
+} from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
 const props = defineProps({
@@ -71,40 +79,47 @@ const submit = () => form.post('/chamados', { forceFormData: true });
 
     <AppLayout>
         <div
-            class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8"
+            class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-50/70 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:py-12"
         >
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div
+                aria-hidden="true"
+                class="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/10"
+            />
+            <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <Link
                     href="/chamados"
-                    class="mb-5 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                    class="mb-6 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                 >
                     <ArrowLeft class="h-4 w-4" />
                     Voltar para chamados
                 </Link>
 
-                <div class="mb-7 flex items-center gap-4">
+                <div class="mb-7 flex items-center gap-4 sm:mb-8">
                     <div
-                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg"
+                        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-white/60 dark:ring-white/10"
                     >
                         <LifeBuoy class="h-7 w-7 text-white" />
                     </div>
                     <div>
                         <h1
-                            class="text-2xl font-bold tracking-tight text-gray-900"
+                            class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
                         >
                             Abrir chamado
                         </h1>
-                        <p class="text-gray-600">
-                            Descreva sua solicitação para a Gestão de Contratos.
+                        <p
+                            class="mt-1 text-sm text-slate-600 dark:text-slate-400 sm:text-base"
+                        >
+                            Conte o que precisa. A equipe de Gestão de Contratos
+                            vai ajudar.
                         </p>
                     </div>
                 </div>
 
                 <form
                     @submit.prevent="submit"
-                    class="space-y-6 rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-100 sm:p-8"
+                    class="space-y-7 rounded-3xl border border-white/80 bg-white/95 p-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.28)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/20 sm:p-8"
                 >
-                    <div>
+                    <div class="space-y-2">
                         <FieldHelp
                             field-id="subject"
                             label="Assunto"
@@ -117,7 +132,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             maxlength="150"
                             required
                             placeholder="Ex.: Dúvida sobre o contrato"
-                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
                         />
                         <p
                             v-if="form.errors.subject"
@@ -127,7 +142,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         </p>
                     </div>
 
-                    <div>
+                    <div class="space-y-2">
                         <FieldHelp
                             field-id="category"
                             label="Tipo de solicitação"
@@ -137,7 +152,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             id="category"
                             v-model="form.category"
                             required
-                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800"
                         >
                             <option value="" disabled>
                                 Selecione uma categoria
@@ -159,7 +174,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                     </div>
 
                     <template v-if="needsContractDetails">
-                        <div>
+                        <div class="space-y-2">
                             <FieldHelp
                                 field-id="specifications"
                                 label="Especificações do objeto"
@@ -172,7 +187,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 maxlength="10000"
                                 required
                                 placeholder="Informe os detalhes, requisitos e características do objeto solicitado."
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
                             />
                             <p
                                 v-if="form.errors.specifications"
@@ -182,7 +197,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <FieldHelp
                                 field-id="justification"
                                 label="Justificativa"
@@ -195,7 +210,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 maxlength="10000"
                                 required
                                 placeholder="Explique a necessidade e o motivo da solicitação."
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
                             />
                             <p
                                 v-if="form.errors.justification"
@@ -205,7 +220,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <FieldHelp
                                 field-id="ficha"
                                 label="Ficha"
@@ -218,7 +233,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 maxlength="100"
                                 required
                                 placeholder="Informe o número ou identificação da ficha."
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
                             />
                             <p
                                 v-if="form.errors.ficha"
@@ -229,7 +244,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         </div>
                     </template>
 
-                    <div>
+                    <div class="space-y-2">
                         <FieldHelp
                             field-id="description"
                             label="Descreva o que precisa"
@@ -238,11 +253,11 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <textarea
                             id="description"
                             v-model="form.description"
-                            rows="7"
+                            rows="6"
                             maxlength="10000"
                             required
                             placeholder="Inclua informações que ajudem a equipe a entender e atender sua solicitação."
-                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm leading-6 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
                         />
                         <p
                             v-if="form.errors.description"
@@ -258,18 +273,35 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             label="Anexos (opcional)"
                             description="Anexe documentos que ajudem a analisar o pedido, como propostas, planilhas ou imagens. São aceitos até 5 arquivos de até 10 MB cada."
                         />
-                        <input
-                            id="attachments"
-                            type="file"
-                            multiple
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                            @change="selectFiles"
-                            class="block w-full rounded-xl border border-gray-300 text-sm text-gray-700 file:mr-4 file:rounded-l-xl file:border-0 file:bg-indigo-50 file:px-4 file:py-3 file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
-                        />
-                        <p class="mt-2 text-xs text-gray-500">
-                            Até 5 arquivos, máximo de 10 MB cada. Formatos: PDF,
-                            DOC, DOCX, XLS, XLSX, PNG e JPG.
-                        </p>
+                        <label
+                            for="attachments"
+                            class="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-600 dark:bg-slate-800/60 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30"
+                        >
+                            <span
+                                class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200 transition group-hover:scale-105 dark:bg-slate-700 dark:text-indigo-300 dark:ring-slate-600"
+                            >
+                                <Paperclip class="h-5 w-5" />
+                            </span>
+                            <span
+                                class="text-sm font-semibold text-slate-700 dark:text-slate-200"
+                            >
+                                Clique para anexar arquivos
+                            </span>
+                            <span
+                                class="mt-1 text-xs text-slate-500 dark:text-slate-400"
+                            >
+                                PDF, DOC, DOCX, XLS, XLSX, PNG ou JPG · até 5
+                                arquivos de 10 MB
+                            </span>
+                            <input
+                                id="attachments"
+                                type="file"
+                                multiple
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                                @change="selectFiles"
+                                class="sr-only"
+                            />
+                        </label>
                         <p
                             v-if="form.errors.attachments"
                             class="mt-1 text-sm text-red-600"
@@ -283,7 +315,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             <li
                                 v-for="(file, index) in form.attachments"
                                 :key="`${file.name}-${file.lastModified}`"
-                                class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                                class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                             >
                                 <span
                                     class="flex min-w-0 items-center gap-2 truncate"
@@ -299,7 +331,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                     type="button"
                                     :aria-label="`Remover ${file.name}`"
                                     @click="removeFile(index)"
-                                    class="rounded p-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                    class="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
                                 >
                                     <X class="h-4 w-4" />
                                 </button>
@@ -315,25 +347,40 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                     </div>
 
                     <div
-                        class="flex flex-col-reverse justify-end gap-3 sm:flex-row"
+                        class="flex flex-col-reverse justify-between gap-4 border-t border-slate-100 pt-5 dark:border-slate-800 sm:flex-row sm:items-center"
                     >
-                        <Link
-                            href="/chamados"
-                            class="rounded-xl border border-gray-300 px-5 py-3 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                        <p
+                            class="hidden items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 sm:flex"
                         >
-                            Cancelar
-                        </Link>
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {{
-                                form.processing
-                                    ? 'Enviando...'
-                                    : 'Enviar chamado'
-                            }}
-                        </button>
+                            <ShieldCheck
+                                class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                            />
+                            Seus dados serão enviados com segurança
+                        </p>
+                        <div class="flex flex-col-reverse gap-3 sm:flex-row">
+                            <Link
+                                href="/chamados"
+                                class="rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                            >
+                                Cancelar
+                            </Link>
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-indigo-600/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                            >
+                                <Send v-if="!form.processing" class="h-4 w-4" />
+                                <CheckCircle2
+                                    v-else
+                                    class="h-4 w-4 animate-pulse"
+                                />
+                                {{
+                                    form.processing
+                                        ? 'Enviando...'
+                                        : 'Enviar chamado'
+                                }}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
