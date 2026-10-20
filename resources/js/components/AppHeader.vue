@@ -29,12 +29,13 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
+import { useAppearance } from '@/composables/useAppearance';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl, urlIsActive } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { InertiaLinkProps, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import { LayoutGrid, Menu, Moon, Search } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -47,6 +48,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
+const { updateAppearance } = useAppearance();
+
+const toggleTheme = () => {
+    updateAppearance(
+        document.documentElement.classList.contains('dark') ? 'light' : 'dark',
+    );
+};
 
 const isCurrentRoute = computed(
     () => (url: NonNullable<InertiaLinkProps['href']>) =>
@@ -55,9 +63,7 @@ const isCurrentRoute = computed(
 
 const activeItemStyles = computed(
     () => (url: NonNullable<InertiaLinkProps['href']>) =>
-        isCurrentRoute.value(toUrl(url))
-            ? 'text-neutral-900'
-            : '',
+        isCurrentRoute.value(toUrl(url)) ? 'text-neutral-900' : '',
 );
 
 const mainNavItems: NavItem[] = [
@@ -73,7 +79,7 @@ const rightNavItems: NavItem[] = [];
 
 <template>
     <div>
-        <div class="border-b border-sidebar-border/80">
+        <div class="border-sidebar-border/80 border-b">
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
@@ -104,7 +110,7 @@ const rightNavItems: NavItem[] = [];
                                         v-for="item in mainNavItems"
                                         :key="item.title"
                                         :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                                        class="hover:bg-accent flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium"
                                         :class="activeItemStyles(item.href)"
                                     >
                                         <component
@@ -188,6 +194,19 @@ const rightNavItems: NavItem[] = [];
                             />
                         </Button>
 
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="group h-9 w-9 cursor-pointer"
+                            aria-label="Alternar tema claro/escuro"
+                            title="Alternar tema claro/escuro"
+                            @click="toggleTheme"
+                        >
+                            <Moon
+                                class="size-5 opacity-80 group-hover:opacity-100"
+                            />
+                        </Button>
+
                         <div class="hidden space-x-1 lg:flex">
                             <template
                                 v-for="item in rightNavItems"
@@ -231,7 +250,7 @@ const rightNavItems: NavItem[] = [];
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
+                                class="focus-within:ring-primary relative size-10 w-auto rounded-full p-1 focus-within:ring-2"
                             >
                                 <Avatar
                                     class="size-8 overflow-hidden rounded-full"
@@ -259,7 +278,7 @@ const rightNavItems: NavItem[] = [];
 
         <div
             v-if="props.breadcrumbs.length > 1"
-            class="flex w-full border-b border-sidebar-border/70"
+            class="border-sidebar-border/70 flex w-full border-b"
         >
             <div
                 class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"

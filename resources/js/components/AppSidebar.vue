@@ -125,12 +125,12 @@ const mainNavItems = computed<NavItem[]>(() => {
                                     class="flex min-w-0 flex-1 flex-col opacity-100 transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0"
                                 >
                                     <span
-                                        class="mb-1 text-[9px] font-black uppercase leading-none tracking-[0.2em] text-primary-400"
+                                        class="mb-1 text-[8px] font-black uppercase leading-tight tracking-[0.1em] text-primary-400"
                                     >
                                         PROCESSOS LICITATÓRIOS
                                     </span>
                                     <span
-                                        class="whitespace-nowrap bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-base font-black leading-none tracking-tight text-transparent"
+                                        class="bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-sm font-black leading-tight tracking-tight text-transparent"
                                     >
                                         Processos Licitatórios
                                     </span>

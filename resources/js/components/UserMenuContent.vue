@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import UserInfo from '@/components/UserInfo.vue';
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import UserInfo from '@/components/UserInfo.vue';
 import { logout } from '@/routes';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
