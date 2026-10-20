@@ -20,13 +20,9 @@ import {
     FileText,
     LayoutDashboard,
     LifeBuoy,
-    Lock,
     MessageSquarePlus,
     Package,
-    Palette,
-    Settings,
     Shield,
-    User,
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -91,32 +87,6 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'RH',
             icon: Users,
             items: rhItems,
-        },
-        {
-            title: 'Configurações',
-            icon: Settings,
-            items: [
-                {
-                    title: 'Perfil',
-                    href: '/settings/profile',
-                    icon: User,
-                },
-                {
-                    title: 'Senha',
-                    href: '/settings/password',
-                    icon: Lock,
-                },
-                {
-                    title: 'Aparência',
-                    href: '/settings/appearance',
-                    icon: Palette,
-                },
-                {
-                    title: 'Autenticação 2FA',
-                    href: '/settings/two-factor',
-                    icon: Shield,
-                },
-            ],
         },
     ];
 
