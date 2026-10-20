@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { FileSignature } from 'lucide-vue-next';
 </script>
 
 <template>
-    <img src="/images/brasao-lagoa-santa.png" alt="Logo" class="object-contain" />
+    <FileSignature class="object-contain" aria-label="Processos Licitatórios" />
 </template>

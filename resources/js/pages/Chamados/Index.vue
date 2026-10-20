@@ -24,6 +24,8 @@ const categoryLabels = {
     contrato: 'Contrato',
     novo_contrato: 'Novo contrato',
     aditivo: 'Aditivo',
+    compra_direta: 'Compra direta',
+    renovacao: 'Renovação',
     documentacao: 'Documentação',
     fiscalizacao: 'Fiscalização',
     pagamento: 'Pagamento',

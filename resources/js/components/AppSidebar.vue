@@ -137,10 +137,10 @@ const mainNavItems = computed<NavItem[]>(() => {
                                 </div>
                                 <div class="flex flex-col flex-1 min-w-0 opacity-100 group-data-[collapsible=icon]:opacity-0 transition-opacity duration-300">
                                     <span class="text-[9px] uppercase font-black text-primary-400 tracking-[0.2em] leading-none mb-1">
-                                        Gestão de Documentos
+                                        PROCESSOS LICITATÓRIOS
                                     </span>
-                                    <span class="truncate font-black text-xl leading-none bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-                                        DocManager
+                                    <span class="whitespace-nowrap font-black text-base leading-none bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+                                        Processos Licitatórios
                                     </span>
                                 </div>
                             </div>

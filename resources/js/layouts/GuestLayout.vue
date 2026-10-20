@@ -1,6 +1,4 @@
-<script setup>
-import ApplicationLogo from '@/components/ApplicationLogo.vue';
-import { Link } from '@inertiajs/vue3';
+<script setup lang="ts">
 import { FileText } from 'lucide-vue-next';
 </script>
 
@@ -28,7 +26,7 @@ import { FileText } from 'lucide-vue-next';
                     </h1>
                     <div class="h-1 w-24 bg-blue-500 mx-auto rounded-full"></div>
                     <h2 class="text-xl lg:text-2xl font-medium text-slate-300">
-                        Sistema de Gestão de Documentos
+                        Sistema de Processos Licitatórios
                     </h2>
                     <p class="text-slate-400 text-lg">
                         Gerencie e organize contratos, comunicações e ofícios de forma simples e eficiente.
@@ -67,7 +65,7 @@ import { FileText } from 'lucide-vue-next';
                 <!-- Mobile Logo -->
                 <div class="md:hidden text-center mb-8">
                     <img src="/images/logos-completas.png" alt="Logo" class="h-20 mx-auto mb-4" />
-                    <h2 class="text-2xl font-bold text-slate-900">Gestão de Documentos</h2>
+                    <h2 class="text-2xl font-bold text-slate-900">Processos Licitatórios</h2>
                 </div>
 
                 <slot />

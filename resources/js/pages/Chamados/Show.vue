@@ -20,6 +20,8 @@ const categoryLabels = {
     contrato: 'Contrato',
     novo_contrato: 'Novo contrato',
     aditivo: 'Aditivo',
+    compra_direta: 'Compra direta',
+    renovacao: 'Renovação',
     documentacao: 'Documentação',
     fiscalizacao: 'Fiscalização',
     pagamento: 'Pagamento',
@@ -82,13 +84,18 @@ const submit = () => form.patch(`/chamados/${props.ticket.id}`);
                     </div>
 
                     <div v-if="ticket.specifications">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">Especificações</h2>
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">Especificações do objeto</h2>
                         <p class="whitespace-pre-wrap text-gray-800">{{ ticket.specifications }}</p>
                     </div>
 
                     <div v-if="ticket.justification">
                         <h2 class="mb-2 text-sm font-semibold text-gray-700">Justificativa</h2>
                         <p class="whitespace-pre-wrap text-gray-800">{{ ticket.justification }}</p>
+                    </div>
+
+                    <div v-if="ticket.ficha">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">Ficha</h2>
+                        <p class="whitespace-pre-wrap text-gray-800">{{ ticket.ficha }}</p>
                     </div>
 
                     <div v-if="ticket.attachments.length">

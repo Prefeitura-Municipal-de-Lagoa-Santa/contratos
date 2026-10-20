@@ -12,6 +12,8 @@ class ContractTicket extends Model
         'contrato',
         'novo_contrato',
         'aditivo',
+        'compra_direta',
+        'renovacao',
         'documentacao',
         'fiscalizacao',
         'pagamento',
@@ -32,6 +34,7 @@ class ContractTicket extends Model
         'description',
         'specifications',
         'justification',
+        'ficha',
         'status',
         'management_response',
     ];

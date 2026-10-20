@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
+import { FileSignature } from 'lucide-vue-next';
 
 defineOptions({
     inheritAttrs: false,
@@ -13,10 +14,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img
-        src="/images/brasao-lagoa-santa.png"
-        alt="Logo Icon"
-        :class="className"
-        v-bind="$attrs"
-    />
+    <FileSignature :class="className" aria-label="Processos Licitatórios" v-bind="$attrs" />
 </template>

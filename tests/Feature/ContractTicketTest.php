@@ -32,7 +32,7 @@ it('allows an employee to create and view their own contract ticket', function (
             ->where('isAdmin', false));
 });
 
-it('requires and stores specifications and justification for new contracts and addenda', function (string $category) {
+it('requires and stores specifications, justification, and ficha for contract requests', function (string $category) {
     $employee = User::factory()->create();
     $baseTicket = [
         'subject' => 'Solicitação contratual',
@@ -42,12 +42,13 @@ it('requires and stores specifications and justification for new contracts and a
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), $baseTicket)
-        ->assertSessionHasErrors(['specifications', 'justification']);
+        ->assertSessionHasErrors(['specifications', 'justification', 'ficha']);
 
     $this->post(route('chamados.store'), [
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
+        'ficha' => 'Ficha 123',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('contract_tickets', [
@@ -55,8 +56,9 @@ it('requires and stores specifications and justification for new contracts and a
         'category' => $category,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
+        'ficha' => 'Ficha 123',
     ]);
-})->with(['novo_contrato', 'aditivo']);
+})->with(['novo_contrato', 'aditivo', 'compra_direta']);
 
 it('does not require contract specifications and justification for other ticket categories', function () {
     $employee = User::factory()->create();
@@ -74,6 +76,27 @@ it('does not require contract specifications and justification for other ticket 
         'category' => 'documentacao',
         'specifications' => null,
         'justification' => null,
+        'ficha' => null,
+    ]);
+});
+
+it('allows opening a renewal ticket without contract specifications and justification', function () {
+    $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Renovação de contrato',
+            'category' => 'renovacao',
+            'description' => 'Solicito avaliar a renovação.',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('contract_tickets', [
+        'user_id' => $employee->id,
+        'category' => 'renovacao',
+        'specifications' => null,
+        'justification' => null,
+        'ficha' => null,
     ]);
 });
 

@@ -44,16 +44,22 @@ class ContractTicketController extends Controller
             'category' => ['required', 'string', 'in:' . implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
             'specifications' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo'], true)),
+                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
                 'nullable',
                 'string',
                 'max:10000',
             ],
             'justification' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo'], true)),
+                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
                 'nullable',
                 'string',
                 'max:10000',
+            ],
+            'ficha' => [
+                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                'nullable',
+                'string',
+                'max:100',
             ],
             'attachments' => ['sometimes', 'array', 'max:5'],
             'attachments.*' => ['file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg'],
@@ -63,11 +69,14 @@ class ContractTicketController extends Controller
             'subject' => $validated['subject'],
             'category' => $validated['category'],
             'description' => $validated['description'],
-            'specifications' => in_array($validated['category'], ['novo_contrato', 'aditivo'], true)
+            'specifications' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
                 ? $validated['specifications']
                 : null,
-            'justification' => in_array($validated['category'], ['novo_contrato', 'aditivo'], true)
+            'justification' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
                 ? $validated['justification']
+                : null,
+            'ficha' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+                ? $validated['ficha']
                 : null,
             'user_id' => $request->user()->id,
         ]);
