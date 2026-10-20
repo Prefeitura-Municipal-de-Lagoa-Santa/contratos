@@ -8,6 +8,7 @@ use App\Services\LdapAuthenticator;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -50,6 +51,12 @@ class LoginRequest extends FormRequest
         $errorField = $this->filled('username') ? 'username' : 'email';
 
         if (config('ldap.enabled')) {
+            if ($this->authenticateLocalAdministrator($identifier, $errorField)) {
+                RateLimiter::clear($this->throttleKey());
+
+                return;
+            }
+
             $this->authenticateWithLdap($identifier, $errorField);
 
             RateLimiter::clear($this->throttleKey());
@@ -69,6 +76,34 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    private function authenticateLocalAdministrator(string $identifier, string $errorField): bool
+    {
+        if (! filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        $user = User::query()
+            ->whereRaw('LOWER(email) = ?', [mb_strtolower($identifier)])
+            ->where('role', User::ROLE_ADMINISTRATOR)
+            ->first();
+
+        if (! $user) {
+            return false;
+        }
+
+        if (! Hash::check((string) $this->input('password'), $user->password)) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                $errorField => trans('auth.failed'),
+            ]);
+        }
+
+        Auth::login($user, $this->boolean('remember'));
+
+        return true;
     }
 
     private function authenticateWithLdap(string $identifier, string $errorField): void

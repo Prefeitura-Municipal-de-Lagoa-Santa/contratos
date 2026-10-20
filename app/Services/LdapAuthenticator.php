@@ -58,8 +58,13 @@ class LdapAuthenticator
                 return null;
             }
 
+            $resultEntry = ldap_first_entry($connection, $search);
+            if ($resultEntry === false) {
+                throw new LdapUnavailableException('Could not read the LDAP user entry.', ldap_errno($connection));
+            }
+
             $entry = $entries[0];
-            $userDn = ldap_get_dn($connection, $entry);
+            $userDn = ldap_get_dn($connection, $resultEntry);
             if ($userDn === false) {
                 throw new LdapUnavailableException('Could not resolve the LDAP user DN.', ldap_errno($connection));
             }

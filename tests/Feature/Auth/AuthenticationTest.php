@@ -106,6 +106,40 @@ test('LDAP login links a matching local account without changing its assigned pr
     ]);
 });
 
+test('local administrator can sign in by email when LDAP is enabled', function () {
+    config(['ldap.enabled' => true]);
+    $admin = User::factory()->create([
+        'email' => 'admin@contratos.com',
+        'password' => 'local-admin-password',
+        'role' => User::ROLE_ADMINISTRATOR,
+    ]);
+
+    $this->post('/login', [
+        'username' => 'admin@contratos.com',
+        'password' => 'local-admin-password',
+    ])->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs($admin);
+});
+
+test('regular local users cannot bypass LDAP authentication with a local password', function () {
+    config(['ldap.enabled' => true]);
+    $user = User::factory()->create([
+        'email' => 'user@example.test',
+        'password' => 'local-user-password',
+    ]);
+    $ldap = Mockery::mock(LdapAuthenticator::class);
+    $ldap->shouldReceive('authenticate')->once()->andReturnNull();
+    $this->instance(LdapAuthenticator::class, $ldap);
+
+    $this->post('/login', [
+        'username' => $user->email,
+        'password' => 'local-user-password',
+    ])->assertSessionHasErrors('username');
+
+    $this->assertGuest();
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 
