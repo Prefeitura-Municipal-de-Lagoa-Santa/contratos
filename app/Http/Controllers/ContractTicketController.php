@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContractTicketController extends Controller
@@ -151,6 +152,19 @@ class ContractTicketController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name']),
         ]);
+    }
+
+    public function exportPdf(Request $request, ContractTicket $ticket)
+    {
+        abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
+
+        $ticket->load(['user:id,name', 'responsible:id,name']);
+
+        return Pdf::loadView('pdf.contract-ticket', [
+            'ticket' => $ticket,
+        ])
+            ->setPaper('A4')
+            ->download('demanda-'.$ticket->id.'.pdf');
     }
 
     public function downloadAttachment(Request $request, ContractTicketAttachment $attachment): StreamedResponse

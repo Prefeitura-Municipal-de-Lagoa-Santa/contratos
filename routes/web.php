@@ -32,6 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/chamados', [App\Http\Controllers\ContractTicketController::class, 'index'])->name('chamados.index');
     Route::get('/chamados/novo', [App\Http\Controllers\ContractTicketController::class, 'create'])->name('chamados.create');
     Route::post('/chamados', [App\Http\Controllers\ContractTicketController::class, 'store'])->name('chamados.store');
+    Route::get('/chamados/{ticket}/pdf', [App\Http\Controllers\ContractTicketController::class, 'exportPdf'])
+        ->name('chamados.pdf')
+        ->whereNumber('ticket');
     Route::get('/chamados/anexos/{attachment}/download', [App\Http\Controllers\ContractTicketController::class, 'downloadAttachment'])
         ->name('chamados.attachments.download')
         ->whereNumber('attachment');

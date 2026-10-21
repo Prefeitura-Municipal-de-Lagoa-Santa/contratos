@@ -5,6 +5,7 @@ import {
     ArrowLeft,
     Check,
     Download,
+    FileDown,
     LifeBuoy,
     Paperclip,
     X,
@@ -89,6 +90,16 @@ const decide = (status) =>
                         </h1>
                     </div>
                 </header>
+
+                <div class="mb-6">
+                    <a
+                        :href="`/chamados/${ticket.id}/pdf`"
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                    >
+                        <FileDown class="h-4 w-4" />
+                        Exportar para PDF
+                    </a>
+                </div>
 
                 <section
                     class="space-y-6 rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-100 sm:p-8"

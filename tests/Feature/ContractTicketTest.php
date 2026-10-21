@@ -31,6 +31,11 @@ it('allows an employee to create and view their own contract ticket', function (
             ->component('Chamados/Show')
             ->where('ticket.id', $ticket->id)
             ->where('isAdmin', false));
+
+    $this->get(route('chamados.pdf', $ticket))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf')
+        ->assertHeader('content-disposition', 'attachment; filename=demanda-'.$ticket->id.'.pdf');
 });
 
 it('requires and stores specifications, justification, and ficha for contract requests', function (string $category) {
@@ -196,6 +201,9 @@ it('does not allow employees to view another employee ticket', function () {
 
     $this->actingAs($otherEmployee)
         ->get(route('chamados.show', $ticket))
+        ->assertForbidden();
+
+    $this->get(route('chamados.pdf', $ticket))
         ->assertForbidden();
 });
 
