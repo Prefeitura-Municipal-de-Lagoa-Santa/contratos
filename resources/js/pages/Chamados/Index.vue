@@ -72,17 +72,17 @@ const deleteTicket = (ticket) => {
 
     <AppLayout>
         <div
-            class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8"
+            class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-5 sm:py-6"
         >
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <header
-                    class="mb-8 flex flex-col gap-5 rounded-3xl border border-white/80 bg-white/70 p-5 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-7"
+                    class="mb-5 flex flex-col gap-4 rounded-2xl border border-white/80 bg-white/70 p-4 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5"
                 >
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         <div
-                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-200"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-200"
                         >
-                            <LifeBuoy class="h-7 w-7 text-white" />
+                            <LifeBuoy class="h-5 w-5 text-white" />
                         </div>
                         <div>
                             <p
@@ -91,11 +91,11 @@ const deleteTicket = (ticket) => {
                                 Gestão de solicitações
                             </p>
                             <h1
-                                class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+                                class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl"
                             >
                                 Demandas
                             </h1>
-                            <p class="mt-1 text-sm text-slate-600 sm:text-base">
+                            <p class="mt-0.5 text-sm text-slate-600">
                                 {{
                                     canManage
                                         ? 'Demandas recebidas pela Gestão de Contratos'
@@ -106,14 +106,14 @@ const deleteTicket = (ticket) => {
                     </div>
                     <Link
                         href="/chamados/novo"
-                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                     >
                         <Plus class="h-5 w-5" />
                         Abrir Demanda
                     </Link>
                 </header>
 
-                <div v-if="tickets.data.length" class="space-y-4">
+                <div v-if="tickets.data.length" class="space-y-3">
                     <article
                         v-for="ticket in tickets.data"
                         :key="ticket.id"
@@ -125,11 +125,11 @@ const deleteTicket = (ticket) => {
                             aria-hidden="true"
                         />
                         <div
-                            class="flex flex-col gap-5 p-5 pl-6 sm:flex-row sm:items-center sm:justify-between sm:p-6 sm:pl-7"
+                            class="flex flex-col gap-3 p-4 pl-5 sm:flex-row sm:items-center sm:justify-between sm:p-4 sm:pl-5"
                         >
                             <div class="min-w-0 flex-1">
                                 <div
-                                    class="mb-2.5 flex flex-wrap items-center gap-2"
+                                    class="mb-1.5 flex flex-wrap items-center gap-2"
                                 >
                                     <span
                                         class="text-xs font-bold uppercase tracking-wide text-slate-500"
@@ -150,7 +150,7 @@ const deleteTicket = (ticket) => {
                                     {{ ticket.subject }}
                                 </h2>
                                 <div
-                                    class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-slate-500"
+                                    class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500"
                                 >
                                     <span
                                         class="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
@@ -172,7 +172,7 @@ const deleteTicket = (ticket) => {
                                     </span>
                                 </div>
                                 <p
-                                    class="mt-3 inline-flex items-center gap-1.5 text-sm text-slate-500"
+                                    class="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500"
                                 >
                                     <UserRoundCog
                                         class="h-4 w-4 text-slate-400"
@@ -187,11 +187,11 @@ const deleteTicket = (ticket) => {
                                 </p>
                             </div>
                             <div
-                                class="flex shrink-0 flex-wrap gap-2 border-t border-slate-100 pt-4 sm:border-0 sm:pt-0"
+                                class="flex shrink-0 flex-wrap gap-2 border-t border-slate-100 pt-3 sm:border-0 sm:pt-0"
                             >
                                 <Link
                                     :href="`/chamados/${ticket.id}`"
-                                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                                    class="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                                 >
                                     <Eye class="h-4 w-4" />
                                     Ver Demanda
@@ -200,7 +200,7 @@ const deleteTicket = (ticket) => {
                                     v-if="isAdmin"
                                     type="button"
                                     @click="deleteTicket(ticket)"
-                                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                                    class="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                                 >
                                     <Trash2 class="h-4 w-4" />
                                     Excluir
@@ -212,7 +212,7 @@ const deleteTicket = (ticket) => {
 
                 <div
                     v-else
-                    class="rounded-2xl bg-white px-6 py-16 text-center shadow-lg"
+                    class="rounded-2xl bg-white px-5 py-10 text-center shadow-lg"
                 >
                     <LifeBuoy class="mx-auto mb-4 h-12 w-12 text-gray-400" />
                     <h2 class="text-lg font-semibold text-gray-900">
@@ -233,7 +233,7 @@ const deleteTicket = (ticket) => {
 
                 <nav
                     v-if="tickets.links.length > 3"
-                    class="mt-8 flex justify-center gap-2"
+                    class="mt-5 flex justify-center gap-2"
                     aria-label="Paginação"
                 >
                     <template v-for="link in tickets.links" :key="link.label">

@@ -201,6 +201,15 @@ const decide = (status) =>
                         </p>
                     </div>
 
+                    <div v-if="ticket.dotacao">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Dotação
+                        </h2>
+                        <p class="whitespace-pre-wrap text-gray-800">
+                            {{ ticket.dotacao }}
+                        </p>
+                    </div>
+
                     <div v-if="ticket.in_pca !== null">
                         <h2 class="mb-2 text-sm font-semibold text-gray-700">
                             Prevista no PCA

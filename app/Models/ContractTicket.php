@@ -42,6 +42,7 @@ class ContractTicket extends Model
         'specifications',
         'justification',
         'ficha',
+        'dotacao',
         'in_pca',
         'involves_other_secretariats',
         'other_fichas',

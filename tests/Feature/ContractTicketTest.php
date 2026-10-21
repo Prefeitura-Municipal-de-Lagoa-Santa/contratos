@@ -70,7 +70,8 @@ it('requires and stores specifications, justification, and ficha for contract re
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
-        'ficha' => 'Ficha 123',
+        'ficha' => '123',
+        'dotacao' => '456',
         'in_pca' => true,
         'involves_other_secretariats' => false,
         'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
@@ -81,11 +82,32 @@ it('requires and stores specifications, justification, and ficha for contract re
         'category' => $category,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
-        'ficha' => 'Ficha 123',
+        'ficha' => '123',
+        'dotacao' => '456',
         'in_pca' => true,
         'involves_other_secretariats' => false,
     ]);
 })->with(['novo_processo', 'compra_direta']);
+
+it('rejects letters in ficha, dotacao, and additional ficha fields', function () {
+    $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Demanda com campos numéricos',
+            'category' => 'novo_processo',
+            'description' => 'Descrição da demanda.',
+            'specifications' => 'Especificações.',
+            'justification' => 'Justificativa.',
+            'ficha' => '12A',
+            'dotacao' => '45B',
+            'in_pca' => true,
+            'involves_other_secretariats' => true,
+            'other_fichas' => ['67C'],
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors(['ficha', 'dotacao', 'other_fichas.0']);
+});
 
 it('requires and stores additional fichas when a request involves other secretariats', function () {
     $employee = User::factory()->create();
@@ -95,7 +117,7 @@ it('requires and stores additional fichas when a request involves other secretar
         'description' => 'Descrição da solicitação.',
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
-        'ficha' => 'Ficha principal',
+        'ficha' => '12345',
         'in_pca' => true,
         'involves_other_secretariats' => true,
     ];
@@ -109,7 +131,7 @@ it('requires and stores additional fichas when a request involves other secretar
 
     $this->post(route('chamados.store'), [
         ...$requestData,
-        'other_fichas' => ['Ficha Secretaria A', 'Ficha Secretaria B'],
+        'other_fichas' => ['67890', '54321'],
         'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
     ])->assertRedirect();
 
@@ -121,15 +143,15 @@ it('requires and stores additional fichas when a request involves other secretar
         'involves_other_secretariats' => true,
     ]);
 
-    expect($ticket->other_fichas)->toBe(['Ficha Secretaria A', 'Ficha Secretaria B']);
+    expect($ticket->other_fichas)->toBe(['67890', '54321']);
 
     $this->get(route('chamados.show', $ticket))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('ticket.in_pca', true)
             ->where('ticket.involves_other_secretariats', true)
-            ->where('ticket.other_fichas.0', 'Ficha Secretaria A')
-            ->where('ticket.other_fichas.1', 'Ficha Secretaria B'));
+            ->where('ticket.other_fichas.0', '67890')
+            ->where('ticket.other_fichas.1', '54321'));
 });
 
 it('does not allow submitting a contract demand that is not planned in the PCA', function () {
@@ -142,7 +164,7 @@ it('does not allow submitting a contract demand that is not planned in the PCA',
             'description' => 'Descrição da demanda.',
             'specifications' => 'Especificações.',
             'justification' => 'Justificativa.',
-            'ficha' => 'Ficha 123',
+            'ficha' => '123',
             'in_pca' => false,
             'involves_other_secretariats' => false,
             'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],

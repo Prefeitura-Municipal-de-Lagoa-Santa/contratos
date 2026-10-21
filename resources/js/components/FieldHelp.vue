@@ -18,9 +18,11 @@ const isVisible = ref(false);
         @mouseleave="isVisible = false"
     >
         <div class="flex items-center gap-1.5">
-            <label :for="fieldId" class="text-sm font-medium text-gray-700">{{
-                label
-            }}</label>
+            <label
+                :for="fieldId"
+                class="text-sm font-medium tracking-normal text-slate-700 dark:text-slate-300"
+                >{{ label }}</label
+            >
             <span class="relative inline-flex">
                 <button
                     type="button"
@@ -31,7 +33,7 @@ const isVisible = ref(false);
                     "
                     @focus="isVisible = true"
                     @blur="isVisible = false"
-                    class="rounded-full text-slate-400 transition hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-full text-slate-400 transition hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                     <CircleHelp class="h-4 w-4" />
                 </button>

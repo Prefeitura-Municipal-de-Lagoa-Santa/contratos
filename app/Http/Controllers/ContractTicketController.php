@@ -69,7 +69,9 @@ class ContractTicketController extends Controller
                 'nullable',
                 'string',
                 'max:100',
+                'regex:/^[0-9]+$/',
             ],
+            'dotacao' => ['nullable', 'string', 'max:100', 'regex:/^[0-9]+$/'],
             'in_pca' => [
                 Rule::requiredIf($requiresContractDetails),
                 'boolean',
@@ -85,11 +87,14 @@ class ContractTicketController extends Controller
                 'array',
                 'min:1',
             ],
-            'other_fichas.*' => ['required', 'string', 'max:100'],
+            'other_fichas.*' => ['required', 'string', 'max:100', 'regex:/^[0-9]+$/'],
             'attachments' => ['required', 'array', 'min:1', 'max:5'],
             'attachments.*' => ['required', 'file', 'max:10240', 'mimes:pdf', 'extensions:pdf'],
         ], [
             'in_pca.in' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
+            'ficha.regex' => 'A ficha deve conter apenas números.',
+            'dotacao.regex' => 'A dotação deve conter apenas números.',
+            'other_fichas.*.regex' => 'A ficha deve conter apenas números.',
         ]);
 
         $ticket = ContractTicket::create([
@@ -104,6 +109,9 @@ class ContractTicketController extends Controller
                 : null,
             'ficha' => $requiresContractDetails
                 ? $validated['ficha']
+                : null,
+            'dotacao' => $requiresContractDetails
+                ? ($validated['dotacao'] ?? null)
                 : null,
             'in_pca' => $requiresContractDetails
                 ? $validated['in_pca']

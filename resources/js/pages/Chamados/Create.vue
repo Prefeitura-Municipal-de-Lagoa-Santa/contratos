@@ -5,6 +5,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     CheckCircle2,
+    ChevronDown,
     LifeBuoy,
     Paperclip,
     Send,
@@ -30,6 +31,9 @@ const categoryLabels = {
     outro: 'Outro assunto',
 };
 
+const fieldControlClass =
+    'w-full rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-3.5 font-sans text-[15px] font-normal leading-6 tracking-[0.01em] text-slate-800 shadow-sm shadow-slate-900/[0.03] transition duration-200 placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 hover:border-indigo-200 hover:bg-white focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-700 dark:hover:bg-slate-800';
+
 const form = useForm<{
     subject: string;
     category: string;
@@ -37,6 +41,7 @@ const form = useForm<{
     specifications: string;
     justification: string;
     ficha: string;
+    dotacao: string;
     in_pca: boolean | null;
     involves_other_secretariats: boolean | null;
     other_fichas: string[];
@@ -48,6 +53,7 @@ const form = useForm<{
     specifications: '',
     justification: '',
     ficha: '',
+    dotacao: '',
     in_pca: null,
     involves_other_secretariats: null,
     other_fichas: [],
@@ -58,11 +64,25 @@ const needsContractDetails = computed(() =>
     ['novo_processo', 'compra_direta'].includes(form.category),
 );
 
+const sanitizeNumericInput = (
+    event: Event,
+    updateValue: (value: string) => void,
+) => {
+    const input = event.target;
+
+    if (input instanceof HTMLInputElement) {
+        const numericValue = input.value.replace(/\D/g, '');
+        input.value = numericValue;
+        updateValue(numericValue);
+    }
+};
+
 watch(needsContractDetails, (isRequired) => {
     if (!isRequired) {
         form.specifications = '';
         form.justification = '';
         form.ficha = '';
+        form.dotacao = '';
         form.in_pca = null;
         form.involves_other_secretariats = null;
         form.other_fichas = [];
@@ -106,51 +126,51 @@ const submit = () => {
 
     <AppLayout>
         <div
-            class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-50/70 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:py-12"
+            class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-50/70 pb-4 pt-1 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:pb-6 sm:pt-2"
         >
             <div
                 aria-hidden="true"
                 class="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/10"
             />
-            <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div class="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                 <Link
                     href="/chamados"
-                    class="mb-6 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
+                    class="mb-2 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                 >
                     <ArrowLeft class="h-4 w-4" />
                     Voltar para Demandas
                 </Link>
 
-                <div class="mb-7 flex items-center gap-4 sm:mb-8">
+                <div class="mb-3 flex items-center gap-5 sm:mb-4">
                     <div
-                        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-white/60 dark:ring-white/10"
+                        class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/20 ring-1 ring-white/60 dark:ring-white/10"
                     >
-                        <LifeBuoy class="h-7 w-7 text-white" />
+                        <LifeBuoy class="h-8 w-8 text-white" />
                     </div>
                     <div>
                         <h1
-                            class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
+                            class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl"
                         >
-                            Abrir Demanda
+                            Nova demanda
                         </h1>
                         <p
                             class="mt-1 text-sm text-slate-600 dark:text-slate-400 sm:text-base"
                         >
-                            Conte o que precisa. A equipe de Gestão de Contratos
-                            vai ajudar.
+                            Preencha os dados abaixo para encaminhar sua demanda
+                            à Gestão de Contratos.
                         </p>
                     </div>
                 </div>
 
                 <form
                     @submit.prevent="submit"
-                    class="space-y-7 rounded-3xl border border-white/80 bg-white/95 p-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.28)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/20 sm:p-8"
+                    class="space-y-6 rounded-3xl border border-white/80 bg-white/95 p-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.28)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/20 sm:p-8"
                 >
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                         <FieldHelp
                             field-id="subject"
-                            label="Assunto"
-                            description="Resuma em poucas palavras o motivo principal da demanda."
+                            label="Assunto da demanda"
+                            description="Escreva um título curto que identifique sua necessidade."
                         />
                         <input
                             id="subject"
@@ -158,8 +178,8 @@ const submit = () => {
                             type="text"
                             maxlength="150"
                             required
-                            placeholder="Ex.: Dúvida sobre o contrato"
-                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                            placeholder="Ex.: Solicitação de novo processo"
+                            :class="fieldControlClass"
                         />
                         <p
                             v-if="form.errors.subject"
@@ -169,29 +189,38 @@ const submit = () => {
                         </p>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                         <FieldHelp
                             field-id="category"
-                            label="Tipo de solicitação"
-                            description="Escolha a categoria que melhor corresponde ao que precisa. Algumas opções mostram campos adicionais."
+                            label="Categoria da demanda"
+                            description="Selecione a categoria que melhor descreve sua demanda. Os campos necessários serão exibidos em seguida."
                         />
-                        <select
-                            id="category"
-                            v-model="form.category"
-                            required
-                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800"
-                        >
-                            <option value="" disabled>
-                                Selecione uma categoria
-                            </option>
-                            <option
-                                v-for="category in props.categories"
-                                :key="category"
-                                :value="category"
+                        <div class="relative">
+                            <select
+                                id="category"
+                                v-model="form.category"
+                                required
+                                :class="[
+                                    fieldControlClass,
+                                    'appearance-none pr-11',
+                                ]"
                             >
-                                {{ categoryLabels[category] }}
-                            </option>
-                        </select>
+                                <option value="" disabled>
+                                    Selecione uma categoria
+                                </option>
+                                <option
+                                    v-for="category in props.categories"
+                                    :key="category"
+                                    :value="category"
+                                >
+                                    {{ categoryLabels[category] }}
+                                </option>
+                            </select>
+                            <ChevronDown
+                                aria-hidden="true"
+                                class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            />
+                        </div>
                         <p
                             v-if="form.errors.category"
                             class="mt-1 text-sm text-red-600"
@@ -201,11 +230,11 @@ const submit = () => {
                     </div>
 
                     <template v-if="needsContractDetails">
-                        <div class="space-y-2">
+                        <div class="space-y-1.5">
                             <FieldHelp
                                 field-id="specifications"
                                 label="Especificações do objeto"
-                                description="Descreva detalhadamente o que será contratado ou adquirido, incluindo requisitos, quantidades e características necessárias."
+                                description="Informe o que precisa ser contratado ou adquirido, incluindo requisitos, quantidades e características."
                             />
                             <textarea
                                 id="specifications"
@@ -214,7 +243,10 @@ const submit = () => {
                                 maxlength="10000"
                                 required
                                 placeholder="Informe os detalhes, requisitos e características do objeto solicitado."
-                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                                :class="[
+                                    fieldControlClass,
+                                    'resize-y leading-6',
+                                ]"
                             />
                             <p
                                 v-if="form.errors.specifications"
@@ -224,11 +256,11 @@ const submit = () => {
                             </p>
                         </div>
 
-                        <div class="space-y-2">
+                        <div class="space-y-1.5">
                             <FieldHelp
                                 field-id="justification"
                                 label="Justificativa"
-                                description="Explique a necessidade da solicitação, o problema que atende e por que ela é importante para o serviço."
+                                description="Conte por que essa demanda é necessária e qual necessidade do serviço ela atende."
                             />
                             <textarea
                                 id="justification"
@@ -237,7 +269,10 @@ const submit = () => {
                                 maxlength="10000"
                                 required
                                 placeholder="Explique a necessidade e o motivo da solicitação."
-                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                                :class="[
+                                    fieldControlClass,
+                                    'resize-y leading-6',
+                                ]"
                             />
                             <p
                                 v-if="form.errors.justification"
@@ -247,26 +282,64 @@ const submit = () => {
                             </p>
                         </div>
 
-                        <div class="space-y-2">
+                        <div class="space-y-1.5">
                             <FieldHelp
                                 field-id="ficha"
                                 label="Ficha"
-                                description="Informe o número ou código da ficha orçamentária relacionada à solicitação."
+                                description="Informe o número ou código da ficha orçamentária vinculada à demanda."
                             />
                             <input
                                 id="ficha"
                                 v-model="form.ficha"
                                 type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
                                 maxlength="100"
                                 required
-                                placeholder="Informe o número ou identificação da ficha."
-                                class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                                placeholder="Digite apenas números."
+                                @input="
+                                    sanitizeNumericInput(
+                                        $event,
+                                        (value) => (form.ficha = value),
+                                    )
+                                "
+                                :class="fieldControlClass"
                             />
                             <p
                                 v-if="form.errors.ficha"
                                 class="mt-1 text-sm text-red-600"
                             >
                                 {{ form.errors.ficha }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <FieldHelp
+                                field-id="dotacao"
+                                label="Dotação"
+                                description="Informe a dotação orçamentária vinculada à demanda, se disponível."
+                            />
+                            <input
+                                id="dotacao"
+                                v-model="form.dotacao"
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="100"
+                                placeholder="Digite apenas números."
+                                @input="
+                                    sanitizeNumericInput(
+                                        $event,
+                                        (value) => (form.dotacao = value),
+                                    )
+                                "
+                                :class="fieldControlClass"
+                            />
+                            <p
+                                v-if="form.errors.dotacao"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.dotacao }}
                             </p>
                         </div>
 
@@ -378,10 +451,20 @@ const submit = () => {
                                         :id="`other-ficha-${index}`"
                                         v-model="form.other_fichas[index]"
                                         type="text"
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
                                         maxlength="100"
                                         required
-                                        placeholder="Informe o número ou identificação da ficha."
-                                        class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                                        placeholder="Digite apenas números."
+                                        @input="
+                                            sanitizeNumericInput(
+                                                $event,
+                                                (value) =>
+                                                    (form.other_fichas[index] =
+                                                        value),
+                                            )
+                                        "
+                                        :class="fieldControlClass"
                                     />
                                     <p
                                         v-if="
@@ -411,11 +494,11 @@ const submit = () => {
                         </template>
                     </template>
 
-                    <div v-if="form.in_pca !== false" class="space-y-2">
+                    <div v-if="form.in_pca !== false" class="space-y-1.5">
                         <FieldHelp
                             field-id="description"
-                            label="Descreva o que precisa"
-                            description="Acrescente contexto, prazos, contrato relacionado ou outras informações que ajudem a equipe a atender a demanda."
+                            label="Detalhes da demanda"
+                            description="Inclua contexto, prazos, contrato relacionado e outras informações úteis para a análise."
                         />
                         <textarea
                             id="description"
@@ -423,8 +506,8 @@ const submit = () => {
                             rows="6"
                             maxlength="10000"
                             required
-                            placeholder="Inclua informações que ajudem a equipe a entender e atender sua solicitação."
-                            class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm leading-6 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                            placeholder="Descreva o que precisa, por que é necessário e qualquer informação que ajude na análise."
+                            :class="[fieldControlClass, 'resize-y leading-6']"
                         />
                         <p
                             v-if="form.errors.description"
@@ -442,7 +525,7 @@ const submit = () => {
                         />
                         <label
                             for="attachments"
-                            class="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-600 dark:bg-slate-800/60 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30"
+                            class="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-4 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-600 dark:bg-slate-800/60 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30"
                         >
                             <span
                                 class="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200 transition group-hover:scale-105 dark:bg-slate-700 dark:text-indigo-300 dark:ring-slate-600"
@@ -514,7 +597,7 @@ const submit = () => {
                     </div>
 
                     <div
-                        class="flex flex-col-reverse justify-between gap-4 border-t border-slate-100 pt-5 dark:border-slate-800 sm:flex-row sm:items-center"
+                        class="flex flex-col-reverse justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800 sm:flex-row sm:items-center"
                     >
                         <p
                             class="hidden items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 sm:flex"

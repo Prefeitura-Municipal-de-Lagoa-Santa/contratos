@@ -236,13 +236,19 @@
         </section>
     @endif
 
-    @if ($ticket->ficha || $ticket->in_pca !== null || $ticket->involves_other_secretariats !== null)
+    @if ($ticket->ficha || $ticket->dotacao || $ticket->in_pca !== null || $ticket->involves_other_secretariats !== null)
         <section class="section">
             <h2 class="section-title">Planejamento e orçamento</h2>
             @if ($ticket->ficha)
                 <div class="answer-row">
                     <span class="label">Ficha principal</span>
                     <span class="answer">{{ $ticket->ficha }}</span>
+                </div>
+            @endif
+            @if ($ticket->dotacao)
+                <div class="answer-row">
+                    <span class="label">Dotação</span>
+                    <span class="answer">{{ $ticket->dotacao }}</span>
                 </div>
             @endif
             @if ($ticket->in_pca !== null)
