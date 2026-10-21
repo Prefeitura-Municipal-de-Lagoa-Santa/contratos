@@ -44,7 +44,7 @@ class ContractTicketController extends Controller
     {
         $requiresContractDetails = in_array(
             $request->input('category'),
-            ['novo_contrato', 'aditivo', 'compra_direta'],
+            ['novo_processo', 'compra_direta'],
             true,
         );
 
@@ -53,19 +53,19 @@ class ContractTicketController extends Controller
             'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
             'specifications' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:10000',
             ],
             'justification' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:10000',
             ],
             'ficha' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:100',
@@ -96,22 +96,22 @@ class ContractTicketController extends Controller
             'subject' => $validated['subject'],
             'category' => $validated['category'],
             'description' => $validated['description'],
-            'specifications' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'specifications' => $requiresContractDetails
                 ? $validated['specifications']
                 : null,
-            'justification' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'justification' => $requiresContractDetails
                 ? $validated['justification']
                 : null,
-            'ficha' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'ficha' => $requiresContractDetails
                 ? $validated['ficha']
                 : null,
-            'in_pca' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'in_pca' => $requiresContractDetails
                 ? $validated['in_pca']
                 : null,
-            'involves_other_secretariats' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'involves_other_secretariats' => $requiresContractDetails
                 ? $validated['involves_other_secretariats']
                 : null,
-            'other_fichas' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'other_fichas' => $requiresContractDetails
                 && $request->boolean('involves_other_secretariats')
                     ? $validated['other_fichas']
                     : null,

@@ -19,7 +19,8 @@ const props = defineProps({
 
 const categoryLabels = {
     contrato: 'Contrato',
-    novo_contrato: 'Novo contrato',
+    novo_processo: 'Novo processo',
+    novo_contrato: 'Novo processo',
     aditivo: 'Aditivo',
     compra_direta: 'Compra direta',
     renovacao: 'Renovação',
@@ -54,7 +55,7 @@ const form = useForm<{
 });
 
 const needsContractDetails = computed(() =>
-    ['novo_contrato', 'aditivo', 'compra_direta'].includes(form.category),
+    ['novo_processo', 'compra_direta'].includes(form.category),
 );
 
 watch(needsContractDetails, (isRequired) => {

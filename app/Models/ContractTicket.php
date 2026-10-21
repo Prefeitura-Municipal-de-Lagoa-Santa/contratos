@@ -9,15 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ContractTicket extends Model
 {
     public const CATEGORIES = [
-        'contrato',
-        'novo_contrato',
-        'aditivo',
+        'novo_processo',
         'compra_direta',
         'renovacao',
-        'documentacao',
-        'fiscalizacao',
-        'pagamento',
-        'outro',
     ];
 
     public const STATUSES = [

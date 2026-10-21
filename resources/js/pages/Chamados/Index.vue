@@ -43,7 +43,8 @@ const statusAccentStyles = {
 
 const categoryLabels = {
     contrato: 'Contrato',
-    novo_contrato: 'Novo contrato',
+    novo_processo: 'Novo processo',
+    novo_contrato: 'Novo processo',
     aditivo: 'Aditivo',
     compra_direta: 'Compra direta',
     renovacao: 'Renovação',
