@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { CalendarDays, LifeBuoy, MessageSquarePlus, Package } from 'lucide-vue-next';
+
+const page = usePage();
 
 const shortcuts = [
     {
@@ -10,6 +12,7 @@ const shortcuts = [
         href: '/ferias',
         icon: CalendarDays,
         style: 'bg-orange-50 text-orange-700 hover:bg-orange-100',
+        availableToUser: false,
     },
     {
         title: 'Patrimônio',
@@ -17,6 +20,7 @@ const shortcuts = [
         href: '/patrimonios',
         icon: Package,
         style: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+        availableToUser: false,
     },
     {
         title: 'Chamados',
@@ -24,6 +28,7 @@ const shortcuts = [
         href: '/chamados',
         icon: LifeBuoy,
         style: 'bg-blue-50 text-blue-700 hover:bg-blue-100',
+        availableToUser: true,
     },
     {
         title: 'Abrir chamado',
@@ -31,8 +36,13 @@ const shortcuts = [
         href: '/chamados/novo',
         icon: MessageSquarePlus,
         style: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
+        availableToUser: true,
     },
 ];
+
+const visibleShortcuts = page.props.auth.user.role === 'user'
+    ? shortcuts.filter((shortcut) => shortcut.availableToUser)
+    : shortcuts;
 </script>
 
 <template>
@@ -49,7 +59,7 @@ const shortcuts = [
                 <h2 id="quick-access-heading" class="mb-5 text-lg font-semibold text-gray-900">Acesso rápido</h2>
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     <Link
-                        v-for="shortcut in shortcuts"
+                        v-for="shortcut in visibleShortcuts"
                         :key="shortcut.title"
                         :href="shortcut.href"
                         class="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-1 hover:shadow-lg"
