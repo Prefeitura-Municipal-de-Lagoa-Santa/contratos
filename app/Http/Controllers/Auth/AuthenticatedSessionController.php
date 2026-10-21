@@ -19,7 +19,8 @@ class AuthenticatedSessionController extends Controller
     public function create(): Response
     {
         return Inertia::render('auth/Login', [
-            'canResetPassword' => Route::has('password.request'),
+            'canResetPassword' => ! config('ldap.enabled') && Route::has('password.request'),
+            'ldapEnabled' => (bool) config('ldap.enabled'),
             'status' => session('status'),
         ]);
     }

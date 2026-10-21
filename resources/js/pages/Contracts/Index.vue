@@ -11,8 +11,11 @@ import {
     Search,
     Calendar,
     DollarSign,
-    Building2
+    Building2,
+    Download
 } from 'lucide-vue-next';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const props = defineProps({
     contracts: Object,
@@ -47,6 +50,78 @@ const deleteContract = (contractId) => {
         router.delete(route('contracts.destroy', contractId));
     }
 };
+
+const exportToPdf = () => {
+    const doc = new jsPDF('landscape');
+    
+    // Título
+    doc.setFontSize(18);
+    doc.setTextColor(79, 70, 229); // Indigo
+    doc.text('Relatório de Documentos', 14, 22);
+    
+    // Data de geração
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 30);
+    
+    // Dados da tabela
+    const tableData = props.contracts.data.map(contract => [
+        contract.code || 'N/A',
+        contract.title || 'N/A',
+        contract.supplier?.trade_name || 'N/A',
+        contract.contract_type?.name || 'N/A',
+        contract.status || 'N/A',
+        `${formatDate(contract.start_date)} - ${formatDate(contract.end_date)}`,
+        formatCurrency(contract.total)
+    ]);
+    
+    // Gerar tabela
+    autoTable(doc, {
+        startY: 38,
+        head: [['Código', 'Título', 'Fornecedor', 'Tipo', 'Status', 'Período', 'Valor']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: 255,
+            fontSize: 10,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 9
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 250]
+        },
+        columnStyles: {
+            0: { cellWidth: 30 },
+            1: { cellWidth: 50 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 25 },
+            5: { cellWidth: 45 },
+            6: { cellWidth: 30 }
+        },
+        margin: { top: 38 }
+    });
+    
+    // Rodapé
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+            `Página ${i} de ${pageCount} - Sistema de Documentos`,
+            doc.internal.pageSize.width / 2,
+            doc.internal.pageSize.height - 10,
+            { align: 'center' }
+        );
+    }
+    
+    // Download
+    doc.save(`documentos_${new Date().toISOString().split('T')[0]}.pdf`);
+};
 </script>
 
 <template>
@@ -63,13 +138,22 @@ const deleteContract = (contractId) => {
                             Gerencie todos os contratos do sistema
                         </p>
                     </div>
-                    <Link
-                        :href="route('contracts.create')"
-                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        <Plus class="h-4 w-4" />
-                        Novo Contrato
-                    </Link>
+                    <div class="flex gap-3">
+                        <button
+                            @click="exportToPdf"
+                            class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                        >
+                            <Download class="h-4 w-4" />
+                            Exportar PDF
+                        </button>
+                        <Link
+                            :href="route('contracts.create')"
+                            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        >
+                            <Plus class="h-4 w-4" />
+                            Novo Contrato
+                        </Link>
+                    </div>
                 </div>
 
                 <!-- Contracts Table -->

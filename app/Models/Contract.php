@@ -22,9 +22,13 @@ class Contract extends Model
         'end_date',
         'total',
         'manager',
+        'manager_email',
         'deputy_manager',
+        'deputy_manager_email',
         'inspector',
+        'inspector_email',
         'deputy_inspector',
+        'deputy_inspector_email',
     ];
 
     protected $casts = [

@@ -1,21 +1,27 @@
-<script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
+<script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import GuestLayout from '@/layouts/GuestLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Mail, Lock, ArrowRight } from 'lucide-vue-next';
+import { Eye, EyeOff, Info, Lock, User as UserIcon } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 defineProps({
     canResetPassword: {
         type: Boolean,
+    },
+    ldapEnabled: {
+        type: Boolean,
+        default: false,
     },
     status: {
         type: String,
     },
 });
 
+const showPassword = ref(false);
+
 const form = useForm({
-    email: '',
+    username: '',
     password: '',
     remember: false,
 });
@@ -31,129 +37,163 @@ const submit = () => {
     <GuestLayout>
         <Head title="Login" />
 
-        <!-- Welcome Header -->
-        <div class="text-center mb-8 animate-fade-in">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                Bem-vindo de volta! 👋
-            </h1>
-            <p class="text-gray-600 text-sm">
-                Entre com suas credenciais para continuar
-            </p>
-        </div>
-
-        <!-- Status Message -->
-        <div 
-            v-if="status" 
-            class="mb-6 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm text-green-700 animate-slide-down"
+        <div
+            class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_70px_-28px_rgba(15,23,42,0.28)] sm:p-9"
         >
-            {{ status }}
-        </div>
+            <div class="mb-8">
+                <div
+                    class="mb-6 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100"
+                >
+                    <Lock class="h-5 w-5" />
+                </div>
+                <h1
+                    class="mb-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"
+                >
+                    Acesse sua conta
+                </h1>
+                <p class="text-sm leading-6 text-slate-500">
+                    Digite suas credenciais para continuar
+                </p>
+            </div>
 
-        <!-- Login Form -->
-        <form @submit.prevent="submit" class="space-y-5">
-            <!-- Email Field -->
-            <div class="space-y-2 animate-slide-up" style="animation-delay: 0.1s;">
-                <label for="email" class="block text-sm font-semibold text-gray-700">
-                    Email
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Mail :size="20" class="text-gray-400" />
+            <div
+                v-if="status"
+                class="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700"
+            >
+                {{ status }}
+            </div>
+
+            <form @submit.prevent="submit" class="space-y-5">
+                <div class="space-y-2">
+                    <label
+                        for="username"
+                        class="block text-sm font-semibold text-slate-700"
+                    >
+                        Usuário de rede
+                    </label>
+                    <div class="group relative">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 transition-colors duration-300 group-focus-within:text-blue-600"
+                        >
+                            <UserIcon :size="20" class="text-slate-400" />
+                        </div>
+                        <input
+                            id="username"
+                            type="text"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 transition duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+                            v-model="form.username"
+                            required
+                            autofocus
+                            autocomplete="username"
+                            placeholder="Digite seu usuário de rede"
+                        />
                     </div>
-                    <input
-                        id="email"
-                        type="email"
-                        class="input-modern w-full pl-12 pr-4"
-                        v-model="form.email"
-                        required
-                        autofocus
-                        autocomplete="username"
-                        placeholder="seu@email.com"
+                    <InputError
+                        class="mt-2 text-xs font-medium text-rose-600"
+                        :message="form.errors.username"
                     />
                 </div>
-                <InputError class="mt-2 text-sm animate-slide-down" :message="form.errors.email" />
-            </div>
 
-            <!-- Password Field -->
-            <div class="space-y-2 animate-slide-up" style="animation-delay: 0.2s;">
-                <label for="password" class="block text-sm font-semibold text-gray-700">
-                    Senha
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock :size="20" class="text-gray-400" />
+                <div class="space-y-2">
+                    <label
+                        for="password"
+                        class="block text-sm font-semibold text-slate-700"
+                    >
+                        Senha
+                    </label>
+                    <div class="group relative">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 transition-colors duration-300 group-focus-within:text-blue-600"
+                        >
+                            <Lock :size="20" class="text-slate-400" />
+                        </div>
+                        <input
+                            id="password"
+                            :type="showPassword ? 'text' : 'password'"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-11 pr-12 text-sm text-slate-900 placeholder-slate-400 transition duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+                            v-model="form.password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="••••••••"
+                        />
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 transition-colors hover:text-slate-600 focus:outline-none"
+                        >
+                            <component
+                                :is="showPassword ? EyeOff : Eye"
+                                :size="20"
+                            />
+                        </button>
                     </div>
-                    <input
-                        id="password"
-                        type="password"
-                        class="input-modern w-full pl-12 pr-4"
-                        v-model="form.password"
-                        required
-                        autocomplete="current-password"
-                        placeholder="••••••••"
+                    <InputError
+                        class="mt-2 text-xs font-medium text-rose-600"
+                        :message="form.errors.password"
                     />
                 </div>
-                <InputError class="mt-2 text-sm animate-slide-down" :message="form.errors.password" />
-            </div>
 
-            <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between animate-slide-up" style="animation-delay: 0.3s;">
-                <label class="flex items-center cursor-pointer group">
-                    <Checkbox 
-                        name="remember" 
-                        v-model:checked="form.remember"
-                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 transition-all"
-                    />
-                    <span class="ms-2 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
-                        Lembrar-me
-                    </span>
-                </label>
+                <div class="flex items-center justify-between pt-1">
+                    <label class="group flex cursor-pointer items-center">
+                        <input
+                            type="checkbox"
+                            v-model="form.remember"
+                            class="h-4 w-4 cursor-pointer rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span
+                            class="ml-2.5 text-sm text-slate-600 transition-colors group-hover:text-slate-900"
+                        >
+                            Manter-me conectado
+                        </span>
+                    </label>
+                    <Link
+                        v-if="canResetPassword && !ldapEnabled"
+                        :href="route('password.request')"
+                        class="text-sm font-semibold text-blue-700 transition-colors hover:text-blue-800"
+                    >
+                        Esqueceu a senha?
+                    </Link>
+                </div>
 
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                <div class="pt-2">
+                    <button
+                        type="submit"
+                        class="w-full rounded-xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-700/20 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                        :disabled="form.processing"
+                    >
+                        <div class="flex items-center justify-center gap-3">
+                            <span
+                                v-if="form.processing"
+                                class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                            ></span>
+                            <span v-else>Entrar</span>
+                        </div>
+                    </button>
+                </div>
+            </form>
+
+            <div
+                v-if="ldapEnabled"
+                class="mt-6 flex items-start gap-3 rounded-xl border border-blue-100/90 bg-blue-50/80 p-4"
+            >
+                <div
+                    class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white"
                 >
-                    Esqueceu a senha?
-                </Link>
+                    <Info class="h-4 w-4" />
+                </div>
+                <div>
+                    <h4
+                        class="mb-1 text-xs font-bold uppercase tracking-wide text-blue-950"
+                    >
+                        Autenticação via LDAP
+                    </h4>
+                    <p class="text-xs leading-5 text-blue-800">
+                        Use o mesmo
+                        <span class="font-bold">usuário e senha</span> que você
+                        utiliza para fazer login no seu computador.
+                    </p>
+                </div>
             </div>
-
-            <!-- Login Button -->
-            <div class="pt-2 animate-slide-up" style="animation-delay: 0.4s;">
-                <button
-                    type="submit"
-                    class="btn-login w-full flex items-center justify-center gap-2"
-                    :class="{ 'opacity-60': form.processing }"
-                    :disabled="form.processing"
-                >
-                    <span v-if="form.processing" class="spinner"></span>
-                    <span v-else>Entrar</span>
-                    <ArrowRight v-if="!form.processing" :size="20" class="transition-transform group-hover:translate-x-1" />
-                </button>
-            </div>
-        </form>
-
-        <!-- Divider -->
-        <div class="relative my-8 animate-fade-in" style="animation-delay: 0.5s;">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-200"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-white text-gray-500">ou</span>
-            </div>
-        </div>
-
-        <!-- Register Link -->
-        <div class="text-center animate-fade-in" style="animation-delay: 0.6s;">
-            <p class="text-sm text-gray-600">
-                Não tem uma conta?
-                <Link
-                    :href="route('register')"
-                    class="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                    Criar conta
-                </Link>
-            </p>
         </div>
     </GuestLayout>
 </template>
@@ -172,50 +212,6 @@ const submit = () => {
 @keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-/* Staggered animations */
-.animate-slide-up {
-    animation: slideUp 0.5s ease-out backwards;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-slide-down {
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.5s ease-out backwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
     }
 }
 </style>

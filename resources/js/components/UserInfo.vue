@@ -24,15 +24,34 @@ const showAvatar = computed(
 <template>
     <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
         <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="user.name" />
-        <AvatarFallback class="rounded-lg text-black">
+        <AvatarFallback class="user-avatar-fallback rounded-lg text-black">
             {{ getInitials(user.name) }}
         </AvatarFallback>
     </Avatar>
 
-    <div class="grid flex-1 text-left text-sm leading-tight">
-        <span class="truncate font-medium">{{ user.name }}</span>
-        <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{
+    <div class="grid min-w-0 flex-1 text-left text-sm leading-tight">
+        <span
+            class="user-name truncate whitespace-nowrap text-[11px] font-medium text-gray-900"
+            :title="user.name"
+        >
+            {{ user.name }}
+        </span>
+        <span v-if="showEmail" class="text-muted-foreground truncate text-xs">{{
             user.email
         }}</span>
     </div>
 </template>
+
+<style>
+.user-name {
+    color: #0f172a;
+}
+
+.dark .user-name {
+    color: #f8fafc !important;
+}
+
+.dark .user-avatar-fallback {
+    color: #fff !important;
+}
+</style>

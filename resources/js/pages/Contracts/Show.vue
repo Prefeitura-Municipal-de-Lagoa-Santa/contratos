@@ -15,8 +15,12 @@ import {
     Trash2,
     File,
     Paperclip,
-    Eye
+    Eye,
+    FileDown,
+    Mail
 } from 'lucide-vue-next';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const props = defineProps({
     contract: Object,
@@ -43,6 +47,159 @@ const getStatusClass = (status) => {
         'Encerrado': 'bg-gray-100 text-gray-800 border-gray-200',
     };
     return classes[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+};
+
+// Export to PDF function
+const exportToPdf = () => {
+    const doc = new jsPDF();
+    const contract = props.contract;
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(79, 70, 229);
+    doc.text('Detalhes do Documento', 105, 20, { align: 'center' });
+    
+    // Código do contrato
+    doc.setFontSize(14);
+    doc.setTextColor(60);
+    doc.text(contract.code, 105, 30, { align: 'center' });
+    
+    // Linha separadora
+    doc.setDrawColor(79, 70, 229);
+    doc.setLineWidth(0.5);
+    doc.line(20, 35, 190, 35);
+    
+    // Data de geração
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, 42);
+    
+    // Título
+    doc.setFontSize(14);
+    doc.setTextColor(40);
+    doc.text('Título:', 20, 55);
+    doc.setFontSize(12);
+    doc.setTextColor(80);
+    const titleLines = doc.splitTextToSize(contract.title || 'N/A', 160);
+    doc.text(titleLines, 20, 62);
+    
+    let yPos = 62 + (titleLines.length * 6) + 5;
+    
+    // Descrição
+    if (contract.description) {
+        doc.setFontSize(14);
+        doc.setTextColor(40);
+        doc.text('Descrição:', 20, yPos);
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+        const descLines = doc.splitTextToSize(contract.description, 160);
+        doc.text(descLines, 20, yPos + 7);
+        yPos += 7 + (descLines.length * 5) + 8;
+    }
+    
+    // Tabela de informações principais
+    autoTable(doc, {
+        startY: yPos,
+        head: [['Informação', 'Valor']],
+        body: [
+            ['Status', contract.status || 'N/A'],
+            ['Fornecedor', contract.supplier?.trade_name || 'N/A'],
+            ['Tipo de Contrato', contract.contract_type?.name || 'N/A'],
+            ['Data de Início', formatDate(contract.start_date)],
+            ['Data de Término', formatDate(contract.end_date)],
+            ['Valor Total', formatCurrency(contract.total)],
+        ],
+        theme: 'striped',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: 255,
+            fontSize: 11,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 10
+        },
+        columnStyles: {
+            0: { cellWidth: 60, fontStyle: 'bold' },
+            1: { cellWidth: 110 }
+        },
+        margin: { left: 20, right: 20 }
+    });
+    
+    // Responsáveis
+    yPos = doc.lastAutoTable.finalY + 10;
+    
+    autoTable(doc, {
+        startY: yPos,
+        head: [['Responsável', 'Nome', 'E-mail']],
+        body: [
+            ['Gestor', contract.manager || 'N/A', contract.manager_email || 'N/A'],
+            ['Gestor Suplente', contract.deputy_manager || 'N/A', contract.deputy_manager_email || 'N/A'],
+            ['Fiscal', contract.inspector || 'N/A', contract.inspector_email || 'N/A'],
+            ['Fiscal Suplente', contract.deputy_inspector || 'N/A', contract.deputy_inspector_email || 'N/A'],
+        ],
+        theme: 'striped',
+        headStyles: {
+            fillColor: [99, 102, 241],
+            textColor: 255,
+            fontSize: 11,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 10
+        },
+        columnStyles: {
+            0: { cellWidth: 45, fontStyle: 'bold' },
+            1: { cellWidth: 60 },
+            2: { cellWidth: 65 }
+        },
+        margin: { left: 20, right: 20 }
+    });
+    
+    // Arquivos anexados (se houver)
+    if (contract.files?.length > 0) {
+        yPos = doc.lastAutoTable.finalY + 10;
+        
+        const filesData = contract.files.map(file => [
+            file.original_name,
+            props.fileTypeOptions[file.file_type] || file.file_type,
+            formatFileSize(file.file_size)
+        ]);
+        
+        autoTable(doc, {
+            startY: yPos,
+            head: [['Arquivos Anexados', 'Tipo', 'Tamanho']],
+            body: filesData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [34, 197, 94],
+                textColor: 255,
+                fontSize: 11,
+                fontStyle: 'bold'
+            },
+            bodyStyles: {
+                fontSize: 9
+            },
+            margin: { left: 20, right: 20 }
+        });
+    }
+    
+    // Rodapé
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+            `Página ${i} de ${pageCount} - Sistema de Documentos`,
+            105,
+            doc.internal.pageSize.height - 10,
+            { align: 'center' }
+        );
+    }
+    
+    // Download
+    doc.save(`documento_${contract.code}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 // File upload form
@@ -126,13 +283,22 @@ const getFileIcon = (mimeType) => {
                             </p>
                         </div>
                     </div>
-                    <Link
-                        :href="route('contracts.edit', contract.id)"
-                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        <Edit class="h-4 w-4" />
-                        Editar Contrato
-                    </Link>
+                    <div class="flex gap-3">
+                        <button
+                            @click="exportToPdf"
+                            class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                        >
+                            <FileDown class="h-4 w-4" />
+                            Exportar PDF
+                        </button>
+                        <Link
+                            :href="route('contracts.edit', contract.id)"
+                            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        >
+                            <Edit class="h-4 w-4" />
+                            Editar Contrato
+                        </Link>
+                    </div>
                 </div>
 
                 <!-- Contract Details Card -->
@@ -247,6 +413,10 @@ const getFileIcon = (mimeType) => {
                                         <p class="text-sm font-semibold text-gray-900">
                                             {{ contract.manager || 'N/A' }}
                                         </p>
+                                        <a v-if="contract.manager_email" :href="`mailto:${contract.manager_email}`" class="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 mt-1">
+                                            <Mail class="h-3 w-3" />
+                                            {{ contract.manager_email }}
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -262,6 +432,10 @@ const getFileIcon = (mimeType) => {
                                         <p class="text-sm font-semibold text-gray-900">
                                             {{ contract.deputy_manager || 'N/A' }}
                                         </p>
+                                        <a v-if="contract.deputy_manager_email" :href="`mailto:${contract.deputy_manager_email}`" class="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 mt-1">
+                                            <Mail class="h-3 w-3" />
+                                            {{ contract.deputy_manager_email }}
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -277,6 +451,10 @@ const getFileIcon = (mimeType) => {
                                         <p class="text-sm font-semibold text-gray-900">
                                             {{ contract.inspector || 'N/A' }}
                                         </p>
+                                        <a v-if="contract.inspector_email" :href="`mailto:${contract.inspector_email}`" class="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 mt-1">
+                                            <Mail class="h-3 w-3" />
+                                            {{ contract.inspector_email }}
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -292,6 +470,10 @@ const getFileIcon = (mimeType) => {
                                         <p class="text-sm font-semibold text-gray-900">
                                             {{ contract.deputy_inspector || 'N/A' }}
                                         </p>
+                                        <a v-if="contract.deputy_inspector_email" :href="`mailto:${contract.deputy_inspector_email}`" class="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 mt-1">
+                                            <Mail class="h-3 w-3" />
+                                            {{ contract.deputy_inspector_email }}
+                                        </a>
                                     </div>
                                 </div>
                             </div>

@@ -11,27 +11,33 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { useAppearance } from '@/composables/useAppearance';
 import { usePage } from '@inertiajs/vue3';
-import { ChevronsUpDown } from 'lucide-vue-next';
+import { Moon } from 'lucide-vue-next';
 import UserMenuContent from './UserMenuContent.vue';
 
 const page = usePage();
 const user = page.props.auth.user;
 const { isMobile, state } = useSidebar();
+const { updateAppearance } = useAppearance();
+const toggleTheme = () => {
+    updateAppearance(
+        document.documentElement.classList.contains('dark') ? 'light' : 'dark',
+    );
+};
 </script>
 
 <template>
     <SidebarMenu>
-        <SidebarMenuItem>
+        <SidebarMenuItem class="flex items-center gap-1">
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton
-                        size="lg"
-                        class="user-menu-button"
+                        size="default"
+                        class="user-menu-button !h-auto min-w-0 flex-1 !gap-2 !px-2 !py-2"
                         data-test="sidebar-menu-button"
                     >
                         <UserInfo :user="user" />
-                        <ChevronsUpDown class="ml-auto size-4 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -49,54 +55,24 @@ const { isMobile, state } = useSidebar();
                     <UserMenuContent :user="user" />
                 </DropdownMenuContent>
             </DropdownMenu>
+            <SidebarMenuButton
+                class="w-9 shrink-0 justify-center"
+                tooltip="Alternar tema claro/escuro"
+                aria-label="Alternar tema claro/escuro"
+                @click="toggleTheme"
+            >
+                <Moon class="size-4" />
+            </SidebarMenuButton>
         </SidebarMenuItem>
     </SidebarMenu>
 </template>
 
 <style scoped>
 .user-menu-button {
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent;
-    position: relative;
-    overflow: hidden;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 !important;
 }
 
-.user-menu-button::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        135deg,
-        hsl(var(--primary) / 0.05) 0%,
-        transparent 100%
-    );
-    opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 0.75rem;
-}
-
-.user-menu-button:hover::before {
-    opacity: 1;
-}
-
-.user-menu-button:hover {
-    background: linear-gradient(
-        135deg,
-        hsl(var(--sidebar-accent)) 0%,
-        hsl(var(--sidebar-accent) / 0.5) 100%
-    );
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px hsl(var(--primary) / 0.1);
-}
-
-.user-menu-button[data-state="open"] {
-    background: linear-gradient(
-        135deg,
-        hsl(var(--sidebar-accent)) 0%,
-        hsl(var(--sidebar-accent) / 0.7) 100%
-    );
-    box-shadow: 0 4px 12px hsl(var(--primary) / 0.15);
+.user-menu-button[data-state='open'] {
+    @apply bg-gray-50 shadow-sm !important;
 }
 </style>

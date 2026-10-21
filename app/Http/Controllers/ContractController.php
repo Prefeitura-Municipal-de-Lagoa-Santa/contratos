@@ -60,9 +60,13 @@ class ContractController extends Controller
             'end_date' => 'required|date|after:start_date',
             'total' => 'required|numeric|min:0',
             'manager' => 'nullable|string|max:255',
+            'manager_email' => 'nullable|email|max:255',
             'deputy_manager' => 'nullable|string|max:255',
+            'deputy_manager_email' => 'nullable|email|max:255',
             'inspector' => 'nullable|string|max:255',
+            'inspector_email' => 'nullable|email|max:255',
             'deputy_inspector' => 'nullable|string|max:255',
+            'deputy_inspector_email' => 'nullable|email|max:255',
         ]);
 
         $contract = Contract::create([
@@ -77,9 +81,13 @@ class ContractController extends Controller
             'end_date' => $validated['end_date'],
             'total' => $validated['total'],
             'manager' => $validated['manager'],
+            'manager_email' => $validated['manager_email'] ?? null,
             'deputy_manager' => $validated['deputy_manager'],
+            'deputy_manager_email' => $validated['deputy_manager_email'] ?? null,
             'inspector' => $validated['inspector'],
+            'inspector_email' => $validated['inspector_email'] ?? null,
             'deputy_inspector' => $validated['deputy_inspector'],
+            'deputy_inspector_email' => $validated['deputy_inspector_email'] ?? null,
         ]);
 
         return redirect()->route('dashboard')
@@ -133,9 +141,13 @@ class ContractController extends Controller
             'end_date' => 'required|date|after:start_date',
             'total' => 'required|numeric|min:0',
             'manager' => 'nullable|string|max:255',
+            'manager_email' => 'nullable|email|max:255',
             'deputy_manager' => 'nullable|string|max:255',
+            'deputy_manager_email' => 'nullable|email|max:255',
             'inspector' => 'nullable|string|max:255',
+            'inspector_email' => 'nullable|email|max:255',
             'deputy_inspector' => 'nullable|string|max:255',
+            'deputy_inspector_email' => 'nullable|email|max:255',
         ]);
 
         $contract->update($validated);
@@ -151,7 +163,7 @@ class ContractController extends Controller
     {
         $contract->delete();
 
-        return redirect()->route('dashboard')
+        return redirect()->route('contracts.index')
             ->with('success', 'Contrato excluído com sucesso!');
     }
 }
