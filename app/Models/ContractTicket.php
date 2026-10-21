@@ -9,15 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ContractTicket extends Model
 {
     public const CATEGORIES = [
-        'contrato',
-        'novo_contrato',
-        'aditivo',
+        'novo_processo',
         'compra_direta',
         'renovacao',
-        'documentacao',
-        'fiscalizacao',
-        'pagamento',
-        'outro',
     ];
 
     public const STATUSES = [
@@ -47,10 +41,25 @@ class ContractTicket extends Model
         'description',
         'specifications',
         'justification',
+        'quantity',
+        'unit',
         'ficha',
+        'dotacao',
+        'in_pca',
+        'involves_other_secretariats',
+        'other_fichas',
         'status',
         'management_response',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'in_pca' => 'boolean',
+            'involves_other_secretariats' => 'boolean',
+            'other_fichas' => 'array',
+        ];
+    }
 
     public function user(): BelongsTo
     {

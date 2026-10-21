@@ -7,13 +7,22 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
+it('only offers the three current demand categories in the create form', function () {
+    $this->actingAs(User::factory()->create())
+        ->get(route('chamados.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Chamados/Create')
+            ->where('categories', ['novo_processo', 'compra_direta', 'renovacao']));
+});
+
 it('allows an employee to create and view their own contract ticket', function () {
     $employee = User::factory()->create();
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), [
             'subject' => 'Dúvida sobre contrato',
-            'category' => 'contrato',
+            'category' => 'renovacao',
             'description' => 'Preciso de orientação sobre o contrato.',
             'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
@@ -31,6 +40,11 @@ it('allows an employee to create and view their own contract ticket', function (
             ->component('Chamados/Show')
             ->where('ticket.id', $ticket->id)
             ->where('isAdmin', false));
+
+    $this->get(route('chamados.pdf', $ticket))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf')
+        ->assertHeader('content-disposition', 'attachment; filename=demanda-'.$ticket->id.'.pdf');
 });
 
 it('requires and stores specifications, justification, and ficha for contract requests', function (string $category) {
@@ -43,13 +57,25 @@ it('requires and stores specifications, justification, and ficha for contract re
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), $baseTicket)
-        ->assertSessionHasErrors(['specifications', 'justification', 'ficha', 'attachments']);
+        ->assertSessionHasErrors([
+            'specifications',
+            'justification',
+            'ficha',
+            'in_pca',
+            'involves_other_secretariats',
+            'attachments',
+        ]);
 
     $this->post(route('chamados.store'), [
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
-        'ficha' => 'Ficha 123',
+        'quantity' => '25',
+        'unit' => 'UN',
+        'ficha' => '123',
+        'dotacao' => '456',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
         'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
     ])->assertRedirect();
 
@@ -58,17 +84,134 @@ it('requires and stores specifications, justification, and ficha for contract re
         'category' => $category,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
-        'ficha' => 'Ficha 123',
+        'quantity' => 25,
+        'unit' => 'UN',
+        'ficha' => '123',
+        'dotacao' => '456',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
     ]);
-})->with(['novo_contrato', 'aditivo', 'compra_direta']);
+})->with(['novo_processo', 'compra_direta']);
 
-it('does not require contract specifications and justification for other ticket categories', function () {
+it('requires a valid unit when quantity is provided', function () {
+    $employee = User::factory()->create();
+    $requestData = [
+        'subject' => 'Demanda com unidade inválida',
+        'category' => 'novo_processo',
+        'description' => 'Descrição da demanda.',
+        'specifications' => 'Especificações.',
+        'justification' => 'Justificativa.',
+        'quantity' => '2',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
+        'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+    ];
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), $requestData)
+        ->assertSessionHasErrors(['unit']);
+
+    $this->post(route('chamados.store'), [...$requestData, 'unit' => 'KG'])
+        ->assertSessionHasErrors(['unit']);
+});
+
+it('rejects letters in ficha, dotacao, and additional ficha fields', function () {
     $employee = User::factory()->create();
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), [
-            'subject' => 'Dúvida de documentação',
-            'category' => 'documentacao',
+            'subject' => 'Demanda com campos numéricos',
+            'category' => 'novo_processo',
+            'description' => 'Descrição da demanda.',
+            'specifications' => 'Especificações.',
+            'justification' => 'Justificativa.',
+            'quantity' => '2A',
+            'ficha' => '12A',
+            'dotacao' => '45B',
+            'in_pca' => true,
+            'involves_other_secretariats' => true,
+            'other_fichas' => ['67C'],
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors(['quantity', 'ficha', 'dotacao', 'other_fichas.0']);
+});
+
+it('requires and stores additional fichas when a request involves other secretariats', function () {
+    $employee = User::factory()->create();
+    $requestData = [
+        'subject' => 'Solicitação para várias secretarias',
+        'category' => 'novo_processo',
+        'description' => 'Descrição da solicitação.',
+        'specifications' => 'Especificações do pedido.',
+        'justification' => 'Justificativa do pedido.',
+        'ficha' => '12345',
+        'in_pca' => true,
+        'involves_other_secretariats' => true,
+    ];
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            ...$requestData,
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors('other_fichas');
+
+    $this->post(route('chamados.store'), [
+        ...$requestData,
+        'other_fichas' => ['67890', '54321'],
+        'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+    ])->assertRedirect();
+
+    $ticket = ContractTicket::latest('id')->firstOrFail();
+
+    $this->assertDatabaseHas('contract_tickets', [
+        'id' => $ticket->id,
+        'in_pca' => true,
+        'involves_other_secretariats' => true,
+    ]);
+
+    expect($ticket->other_fichas)->toBe(['67890', '54321']);
+
+    $this->get(route('chamados.show', $ticket))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('ticket.in_pca', true)
+            ->where('ticket.involves_other_secretariats', true)
+            ->where('ticket.other_fichas.0', '67890')
+            ->where('ticket.other_fichas.1', '54321'));
+});
+
+it('does not allow submitting a contract demand that is not planned in the PCA', function () {
+    $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Demanda fora do PCA',
+            'category' => 'novo_processo',
+            'description' => 'Descrição da demanda.',
+            'specifications' => 'Especificações.',
+            'justification' => 'Justificativa.',
+            'ficha' => '123',
+            'in_pca' => false,
+            'involves_other_secretariats' => false,
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors([
+            'in_pca' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
+        ]);
+
+    $this->assertDatabaseMissing('contract_tickets', [
+        'subject' => 'Demanda fora do PCA',
+    ]);
+});
+
+it('does not require contract specifications and justification for renewal demands', function () {
+    $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Renovação de contrato',
+            'category' => 'renovacao',
             'description' => 'Preciso de orientação.',
             'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
@@ -76,7 +219,7 @@ it('does not require contract specifications and justification for other ticket 
 
     $this->assertDatabaseHas('contract_tickets', [
         'user_id' => $employee->id,
-        'category' => 'documentacao',
+        'category' => 'renovacao',
         'specifications' => null,
         'justification' => null,
         'ficha' => null,
@@ -116,6 +259,9 @@ it('does not allow employees to view another employee ticket', function () {
 
     $this->actingAs($otherEmployee)
         ->get(route('chamados.show', $ticket))
+        ->assertForbidden();
+
+    $this->get(route('chamados.pdf', $ticket))
         ->assertForbidden();
 });
 
@@ -277,7 +423,7 @@ it('allows employees to attach files to their tickets and download them', functi
     $this->actingAs($employee)
         ->post(route('chamados.store'), [
             'subject' => 'Chamado com anexo',
-            'category' => 'documentacao',
+            'category' => 'renovacao',
             'description' => 'Segue o documento para análise.',
             'attachments' => [$file],
         ])

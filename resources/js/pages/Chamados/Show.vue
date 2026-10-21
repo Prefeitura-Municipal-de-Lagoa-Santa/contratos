@@ -5,6 +5,7 @@ import {
     ArrowLeft,
     Check,
     Download,
+    FileDown,
     LifeBuoy,
     Paperclip,
     X,
@@ -28,7 +29,8 @@ const statusLabels = {
 
 const categoryLabels = {
     contrato: 'Contrato',
-    novo_contrato: 'Novo contrato',
+    novo_processo: 'Novo processo',
+    novo_contrato: 'Novo processo',
     aditivo: 'Aditivo',
     compra_direta: 'Compra direta',
     renovacao: 'Renovação',
@@ -57,7 +59,7 @@ const decide = (status) =>
 </script>
 
 <template>
-    <Head :title="`Requisição #${ticket.id}`" />
+    <Head :title="`Demanda #${ticket.id}`" />
 
     <AppLayout>
         <div
@@ -69,7 +71,7 @@ const decide = (status) =>
                     class="mb-5 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Voltar para Requisições
+                    Voltar para Demandas
                 </Link>
 
                 <header class="mb-7 flex items-center gap-4">
@@ -80,7 +82,7 @@ const decide = (status) =>
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-indigo-600">
-                            Requisição #{{ ticket.id }}
+                            Demanda #{{ ticket.id }}
                         </p>
                         <h1
                             class="text-2xl font-bold tracking-tight text-gray-900"
@@ -89,6 +91,16 @@ const decide = (status) =>
                         </h1>
                     </div>
                 </header>
+
+                <div class="mb-6">
+                    <a
+                        :href="`/chamados/${ticket.id}/pdf`"
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                    >
+                        <FileDown class="h-4 w-4" />
+                        Exportar para PDF
+                    </a>
+                </div>
 
                 <section
                     class="space-y-6 rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-100 sm:p-8"
@@ -124,7 +136,7 @@ const decide = (status) =>
                             class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <Check class="h-4 w-4" />
-                            Aprovar Requisição
+                            Aprovar Demanda
                         </button>
                         <button
                             type="button"
@@ -133,7 +145,7 @@ const decide = (status) =>
                             class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <X class="h-4 w-4" />
-                            Recusar Requisição
+                            Recusar Demanda
                         </button>
                     </div>
 
@@ -180,6 +192,16 @@ const decide = (status) =>
                         </p>
                     </div>
 
+                    <div v-if="ticket.quantity !== null">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Quantidade
+                        </h2>
+                        <p class="whitespace-pre-wrap text-gray-800">
+                            {{ ticket.quantity
+                            }}<span v-if="ticket.unit"> {{ ticket.unit }}</span>
+                        </p>
+                    </div>
+
                     <div v-if="ticket.ficha">
                         <h2 class="mb-2 text-sm font-semibold text-gray-700">
                             Ficha
@@ -187,6 +209,53 @@ const decide = (status) =>
                         <p class="whitespace-pre-wrap text-gray-800">
                             {{ ticket.ficha }}
                         </p>
+                    </div>
+
+                    <div v-if="ticket.dotacao">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Dotação
+                        </h2>
+                        <p class="whitespace-pre-wrap text-gray-800">
+                            {{ ticket.dotacao }}
+                        </p>
+                    </div>
+
+                    <div v-if="ticket.in_pca !== null">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Prevista no PCA
+                        </h2>
+                        <p class="text-gray-800">
+                            {{ ticket.in_pca ? 'Sim' : 'Não' }}
+                        </p>
+                    </div>
+
+                    <div v-if="ticket.involves_other_secretariats !== null">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Envolve outras secretarias
+                        </h2>
+                        <p class="text-gray-800">
+                            {{
+                                ticket.involves_other_secretariats
+                                    ? 'Sim'
+                                    : 'Não'
+                            }}
+                        </p>
+                    </div>
+
+                    <div v-if="ticket.other_fichas?.length">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Fichas de outras secretarias
+                        </h2>
+                        <ul
+                            class="list-inside list-disc space-y-1 text-gray-800"
+                        >
+                            <li
+                                v-for="(ficha, index) in ticket.other_fichas"
+                                :key="index"
+                            >
+                                {{ ficha }}
+                            </li>
+                        </ul>
                     </div>
 
                     <div v-if="ticket.attachments.length">
@@ -235,7 +304,7 @@ const decide = (status) =>
                         class="space-y-5 border-t border-gray-100 pt-6"
                     >
                         <h2 class="text-lg font-semibold text-gray-900">
-                            Atendimento da Requisição
+                            Atendimento da Demanda
                         </h2>
                         <div>
                             <label

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContractTicketController extends Controller
@@ -41,45 +42,101 @@ class ContractTicketController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $requiresContractDetails = in_array(
+            $request->input('category'),
+            ['novo_processo', 'compra_direta'],
+            true,
+        );
+
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
             'specifications' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:10000',
             ],
             'justification' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:10000',
             ],
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:4294967295', 'regex:/^[0-9]+$/'],
+            'unit' => [
+                Rule::requiredIf($request->filled('quantity')),
+                'nullable',
+                'string',
+                Rule::in(['UN', 'CX']),
+            ],
             'ficha' => [
-                Rule::requiredIf(in_array($request->input('category'), ['novo_contrato', 'aditivo', 'compra_direta'], true)),
+                Rule::requiredIf($requiresContractDetails),
                 'nullable',
                 'string',
                 'max:100',
+                'regex:/^[0-9]+$/',
             ],
+            'dotacao' => ['nullable', 'string', 'max:100', 'regex:/^[0-9]+$/'],
+            'in_pca' => [
+                Rule::requiredIf($requiresContractDetails),
+                'boolean',
+                Rule::in($requiresContractDetails ? [true, 1, '1'] : [true, false, 1, 0, '1', '0']),
+            ],
+            'involves_other_secretariats' => [
+                Rule::requiredIf($requiresContractDetails),
+                'boolean',
+            ],
+            'other_fichas' => [
+                Rule::requiredIf($request->boolean('involves_other_secretariats')),
+                'nullable',
+                'array',
+                'min:1',
+            ],
+            'other_fichas.*' => ['required', 'string', 'max:100', 'regex:/^[0-9]+$/'],
             'attachments' => ['required', 'array', 'min:1', 'max:5'],
             'attachments.*' => ['required', 'file', 'max:10240', 'mimes:pdf', 'extensions:pdf'],
+        ], [
+            'in_pca.in' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
+            'ficha.regex' => 'A ficha deve conter apenas números.',
+            'dotacao.regex' => 'A dotação deve conter apenas números.',
+            'quantity.regex' => 'A quantidade deve conter apenas números.',
+            'other_fichas.*.regex' => 'A ficha deve conter apenas números.',
         ]);
 
         $ticket = ContractTicket::create([
             'subject' => $validated['subject'],
             'category' => $validated['category'],
             'description' => $validated['description'],
-            'specifications' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'specifications' => $requiresContractDetails
                 ? $validated['specifications']
                 : null,
-            'justification' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'justification' => $requiresContractDetails
                 ? $validated['justification']
                 : null,
-            'ficha' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+            'quantity' => $requiresContractDetails
+                ? ($validated['quantity'] ?? null)
+                : null,
+            'unit' => $requiresContractDetails
+                ? ($validated['unit'] ?? null)
+                : null,
+            'ficha' => $requiresContractDetails
                 ? $validated['ficha']
                 : null,
+            'dotacao' => $requiresContractDetails
+                ? ($validated['dotacao'] ?? null)
+                : null,
+            'in_pca' => $requiresContractDetails
+                ? $validated['in_pca']
+                : null,
+            'involves_other_secretariats' => $requiresContractDetails
+                ? $validated['involves_other_secretariats']
+                : null,
+            'other_fichas' => $requiresContractDetails
+                && $request->boolean('involves_other_secretariats')
+                    ? $validated['other_fichas']
+                    : null,
             'user_id' => $request->user()->id,
         ]);
 
@@ -117,6 +174,19 @@ class ContractTicketController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name']),
         ]);
+    }
+
+    public function exportPdf(Request $request, ContractTicket $ticket)
+    {
+        abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
+
+        $ticket->load(['user:id,name', 'responsible:id,name']);
+
+        return Pdf::loadView('pdf.contract-ticket', [
+            'ticket' => $ticket,
+        ])
+            ->setPaper('A4')
+            ->download('demanda-'.$ticket->id.'.pdf');
     }
 
     public function downloadAttachment(Request $request, ContractTicketAttachment $attachment): StreamedResponse
