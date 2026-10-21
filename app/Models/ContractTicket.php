@@ -41,6 +41,8 @@ class ContractTicket extends Model
         'description',
         'specifications',
         'justification',
+        'quantity',
+        'unit',
         'ficha',
         'dotacao',
         'in_pca',

@@ -40,6 +40,8 @@ const form = useForm<{
     description: string;
     specifications: string;
     justification: string;
+    quantity: string;
+    unit: string;
     ficha: string;
     dotacao: string;
     in_pca: boolean | null;
@@ -52,6 +54,8 @@ const form = useForm<{
     description: '',
     specifications: '',
     justification: '',
+    quantity: '',
+    unit: '',
     ficha: '',
     dotacao: '',
     in_pca: null,
@@ -81,6 +85,7 @@ watch(needsContractDetails, (isRequired) => {
     if (!isRequired) {
         form.specifications = '';
         form.justification = '';
+        form.quantity = '';
         form.ficha = '';
         form.dotacao = '';
         form.in_pca = null;
@@ -149,12 +154,12 @@ const submit = () => {
                     </div>
                     <div>
                         <h1
-                            class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl"
+                            class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
                         >
                             Nova demanda
                         </h1>
                         <p
-                            class="mt-1 text-sm text-slate-600 dark:text-slate-400 sm:text-base"
+                            class="mt-1 text-xs text-slate-600 dark:text-slate-400 sm:text-sm"
                         >
                             Preencha os dados abaixo para encaminhar sua demanda
                             à Gestão de Contratos.
@@ -279,6 +284,66 @@ const submit = () => {
                                 class="mt-1 text-sm text-red-600"
                             >
                                 {{ form.errors.justification }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="quantity"
+                                label="Quantidade"
+                                description="Informe a quantidade necessária. Use apenas números."
+                            />
+                            <input
+                                id="quantity"
+                                v-model="form.quantity"
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="10"
+                                placeholder="Digite a quantidade."
+                                @input="
+                                    sanitizeNumericInput(
+                                        $event,
+                                        (value) => (form.quantity = value),
+                                    )
+                                "
+                                :class="fieldControlClass"
+                            />
+                            <p
+                                v-if="form.errors.quantity"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.quantity }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="unit"
+                                label="Unidade"
+                                description="Selecione a unidade correspondente à quantidade."
+                            />
+                            <select
+                                id="unit"
+                                v-model="form.unit"
+                                :class="[
+                                    fieldControlClass,
+                                    form.unit
+                                        ? 'text-[15px] tracking-[0.01em] !text-slate-800 dark:!text-slate-100'
+                                        : 'text-sm font-normal tracking-normal !text-slate-400 dark:!text-slate-500',
+                                ]"
+                            >
+                                <option value="" disabled>
+                                    Selecione a unidade.
+                                </option>
+                                <option value="UN">UN</option>
+                                <option value="CX">CX</option>
+                            </select>
+                            <p
+                                v-if="form.errors.unit"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.unit }}
                             </p>
                         </div>
 

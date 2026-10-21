@@ -236,6 +236,13 @@
         </section>
     @endif
 
+    @if ($ticket->quantity !== null)
+        <section class="section">
+            <h2 class="section-title">Quantidade</h2>
+            <p class="section-content">{{ $ticket->quantity }}{{ $ticket->unit ? ' '.$ticket->unit : '' }}</p>
+        </section>
+    @endif
+
     @if ($ticket->ficha || $ticket->dotacao || $ticket->in_pca !== null || $ticket->involves_other_secretariats !== null)
         <section class="section">
             <h2 class="section-title">Planejamento e orçamento</h2>

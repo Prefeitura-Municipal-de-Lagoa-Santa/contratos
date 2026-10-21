@@ -192,6 +192,16 @@ const decide = (status) =>
                         </p>
                     </div>
 
+                    <div v-if="ticket.quantity !== null">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Quantidade
+                        </h2>
+                        <p class="whitespace-pre-wrap text-gray-800">
+                            {{ ticket.quantity
+                            }}<span v-if="ticket.unit"> {{ ticket.unit }}</span>
+                        </p>
+                    </div>
+
                     <div v-if="ticket.ficha">
                         <h2 class="mb-2 text-sm font-semibold text-gray-700">
                             Ficha

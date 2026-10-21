@@ -70,6 +70,8 @@ it('requires and stores specifications, justification, and ficha for contract re
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
+        'quantity' => '25',
+        'unit' => 'UN',
         'ficha' => '123',
         'dotacao' => '456',
         'in_pca' => true,
@@ -82,12 +84,36 @@ it('requires and stores specifications, justification, and ficha for contract re
         'category' => $category,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
+        'quantity' => 25,
+        'unit' => 'UN',
         'ficha' => '123',
         'dotacao' => '456',
         'in_pca' => true,
         'involves_other_secretariats' => false,
     ]);
 })->with(['novo_processo', 'compra_direta']);
+
+it('requires a valid unit when quantity is provided', function () {
+    $employee = User::factory()->create();
+    $requestData = [
+        'subject' => 'Demanda com unidade inválida',
+        'category' => 'novo_processo',
+        'description' => 'Descrição da demanda.',
+        'specifications' => 'Especificações.',
+        'justification' => 'Justificativa.',
+        'quantity' => '2',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
+        'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+    ];
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), $requestData)
+        ->assertSessionHasErrors(['unit']);
+
+    $this->post(route('chamados.store'), [...$requestData, 'unit' => 'KG'])
+        ->assertSessionHasErrors(['unit']);
+});
 
 it('rejects letters in ficha, dotacao, and additional ficha fields', function () {
     $employee = User::factory()->create();
@@ -99,6 +125,7 @@ it('rejects letters in ficha, dotacao, and additional ficha fields', function ()
             'description' => 'Descrição da demanda.',
             'specifications' => 'Especificações.',
             'justification' => 'Justificativa.',
+            'quantity' => '2A',
             'ficha' => '12A',
             'dotacao' => '45B',
             'in_pca' => true,
@@ -106,7 +133,7 @@ it('rejects letters in ficha, dotacao, and additional ficha fields', function ()
             'other_fichas' => ['67C'],
             'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
         ])
-        ->assertSessionHasErrors(['ficha', 'dotacao', 'other_fichas.0']);
+        ->assertSessionHasErrors(['quantity', 'ficha', 'dotacao', 'other_fichas.0']);
 });
 
 it('requires and stores additional fichas when a request involves other secretariats', function () {

@@ -64,6 +64,13 @@ class ContractTicketController extends Controller
                 'string',
                 'max:10000',
             ],
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:4294967295', 'regex:/^[0-9]+$/'],
+            'unit' => [
+                Rule::requiredIf($request->filled('quantity')),
+                'nullable',
+                'string',
+                Rule::in(['UN', 'CX']),
+            ],
             'ficha' => [
                 Rule::requiredIf($requiresContractDetails),
                 'nullable',
@@ -94,6 +101,7 @@ class ContractTicketController extends Controller
             'in_pca.in' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
             'ficha.regex' => 'A ficha deve conter apenas números.',
             'dotacao.regex' => 'A dotação deve conter apenas números.',
+            'quantity.regex' => 'A quantidade deve conter apenas números.',
             'other_fichas.*.regex' => 'A ficha deve conter apenas números.',
         ]);
 
@@ -106,6 +114,12 @@ class ContractTicketController extends Controller
                 : null,
             'justification' => $requiresContractDetails
                 ? $validated['justification']
+                : null,
+            'quantity' => $requiresContractDetails
+                ? ($validated['quantity'] ?? null)
+                : null,
+            'unit' => $requiresContractDetails
+                ? ($validated['unit'] ?? null)
                 : null,
             'ficha' => $requiresContractDetails
                 ? $validated['ficha']
