@@ -127,7 +127,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Abrir demanda" />
+    <Head title="Nova Requisição" />
 
     <AppLayout>
         <div
@@ -156,7 +156,7 @@ const submit = () => {
                         <h1
                             class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
                         >
-                            Nova demanda
+                            Nova Requisição
                         </h1>
                         <p
                             class="mt-1 text-xs text-slate-600 dark:text-slate-400 sm:text-sm"
