@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia><?php echo e(config('app.name', 'Laravel')); ?></title>
+        <link rel="icon" href="<?php echo e(asset('logo.ico')); ?>" type="image/x-icon">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
