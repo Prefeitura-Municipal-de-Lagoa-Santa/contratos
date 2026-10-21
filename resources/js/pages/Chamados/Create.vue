@@ -36,6 +36,9 @@ const form = useForm<{
     specifications: string;
     justification: string;
     ficha: string;
+    in_pca: boolean | null;
+    involves_other_secretariats: boolean | null;
+    other_fichas: string[];
     attachments: File[];
 }>({
     subject: '',
@@ -44,6 +47,9 @@ const form = useForm<{
     specifications: '',
     justification: '',
     ficha: '',
+    in_pca: null,
+    involves_other_secretariats: null,
+    other_fichas: [],
     attachments: [],
 });
 
@@ -56,8 +62,22 @@ watch(needsContractDetails, (isRequired) => {
         form.specifications = '';
         form.justification = '';
         form.ficha = '';
+        form.in_pca = null;
+        form.involves_other_secretariats = null;
+        form.other_fichas = [];
     }
 });
+
+watch(
+    () => form.involves_other_secretariats,
+    (involvesOtherSecretariats) => {
+        if (!involvesOtherSecretariats) {
+            form.other_fichas = [];
+        } else if (form.other_fichas.length === 0) {
+            form.other_fichas = [''];
+        }
+    },
+);
 
 const selectFiles = (event: Event) => {
     const target = event.target;
@@ -71,11 +91,17 @@ const removeFile = (index: number) => {
     form.attachments.splice(index, 1);
 };
 
-const submit = () => form.post('/chamados', { forceFormData: true });
+const submit = () => {
+    if (needsContractDetails.value && form.in_pca === false) {
+        return;
+    }
+
+    form.post('/chamados', { forceFormData: true });
+};
 </script>
 
 <template>
-    <Head title="Abrir requisição" />
+    <Head title="Abrir demanda" />
 
     <AppLayout>
         <div
@@ -91,7 +117,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                     class="mb-6 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    Voltar para Requisições
+                    Voltar para Demandas
                 </Link>
 
                 <div class="mb-7 flex items-center gap-4 sm:mb-8">
@@ -104,7 +130,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <h1
                             class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl"
                         >
-                            Abrir Requisição
+                            Abrir Demanda
                         </h1>
                         <p
                             class="mt-1 text-sm text-slate-600 dark:text-slate-400 sm:text-base"
@@ -123,7 +149,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         <FieldHelp
                             field-id="subject"
                             label="Assunto"
-                            description="Resuma em poucas palavras o motivo principal da Requisição."
+                            description="Resuma em poucas palavras o motivo principal da demanda."
                         />
                         <input
                             id="subject"
@@ -242,13 +268,153 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 {{ form.errors.ficha }}
                             </p>
                         </div>
+
+                        <fieldset class="space-y-3">
+                            <legend
+                                class="text-sm font-semibold text-slate-800 dark:text-slate-200"
+                            >
+                                A demanda está prevista no PCA?
+                            </legend>
+                            <div class="flex gap-3">
+                                <button
+                                    v-for="option in [
+                                        { label: 'Sim', value: true },
+                                        { label: 'Não', value: false },
+                                    ]"
+                                    :key="option.label"
+                                    type="button"
+                                    :aria-pressed="form.in_pca === option.value"
+                                    @click="form.in_pca = option.value"
+                                    :class="
+                                        form.in_pca === option.value
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 dark:bg-indigo-950 dark:text-indigo-300'
+                                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                    "
+                                    class="min-w-20 rounded-xl border px-5 py-2.5 text-sm font-semibold transition"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
+                            <p
+                                v-if="form.errors.in_pca"
+                                class="text-sm text-red-600"
+                            >
+                                {{ form.errors.in_pca }}
+                            </p>
+                            <p
+                                v-if="form.in_pca === false"
+                                role="alert"
+                                class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
+                            >
+                                Não é possível prosseguir com a demanda, pois
+                                ela não está prevista no PCA.
+                            </p>
+                        </fieldset>
+
+                        <template v-if="form.in_pca !== false">
+                            <fieldset class="space-y-3">
+                                <legend
+                                    class="text-sm font-semibold text-slate-800 dark:text-slate-200"
+                                >
+                                    A demanda envolve outras secretarias?
+                                </legend>
+                                <div class="flex gap-3">
+                                    <button
+                                        v-for="option in [
+                                            { label: 'Sim', value: true },
+                                            { label: 'Não', value: false },
+                                        ]"
+                                        :key="option.label"
+                                        type="button"
+                                        :aria-pressed="
+                                            form.involves_other_secretariats ===
+                                            option.value
+                                        "
+                                        @click="
+                                            form.involves_other_secretariats =
+                                                option.value
+                                        "
+                                        :class="
+                                            form.involves_other_secretariats ===
+                                            option.value
+                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 dark:bg-indigo-950 dark:text-indigo-300'
+                                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                        "
+                                        class="min-w-20 rounded-xl border px-5 py-2.5 text-sm font-semibold transition"
+                                    >
+                                        {{ option.label }}
+                                    </button>
+                                </div>
+                                <p
+                                    v-if="
+                                        form.errors.involves_other_secretariats
+                                    "
+                                    class="text-sm text-red-600"
+                                >
+                                    {{
+                                        form.errors.involves_other_secretariats
+                                    }}
+                                </p>
+                            </fieldset>
+
+                            <div
+                                v-if="form.involves_other_secretariats"
+                                class="space-y-4"
+                            >
+                                <div
+                                    v-for="(_, index) in form.other_fichas"
+                                    :key="index"
+                                    class="space-y-2"
+                                >
+                                    <label
+                                        :for="`other-ficha-${index}`"
+                                        class="block text-sm font-medium text-slate-800 dark:text-slate-200"
+                                    >
+                                        Ficha da outra secretaria
+                                        {{ index + 1 }}
+                                    </label>
+                                    <input
+                                        :id="`other-ficha-${index}`"
+                                        v-model="form.other_fichas[index]"
+                                        type="text"
+                                        maxlength="100"
+                                        required
+                                        placeholder="Informe o número ou identificação da ficha."
+                                        class="w-full rounded-xl border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+                                    />
+                                    <p
+                                        v-if="
+                                            form.errors[`other_fichas.${index}`]
+                                        "
+                                        class="text-sm text-red-600"
+                                    >
+                                        {{
+                                            form.errors[`other_fichas.${index}`]
+                                        }}
+                                    </p>
+                                </div>
+                                <p
+                                    v-if="form.errors.other_fichas"
+                                    class="text-sm text-red-600"
+                                >
+                                    {{ form.errors.other_fichas }}
+                                </p>
+                                <button
+                                    type="button"
+                                    @click="form.other_fichas.push('')"
+                                    class="rounded-lg border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-950"
+                                >
+                                    Adicionar outra ficha
+                                </button>
+                            </div>
+                        </template>
                     </template>
 
-                    <div class="space-y-2">
+                    <div v-if="form.in_pca !== false" class="space-y-2">
                         <FieldHelp
                             field-id="description"
                             label="Descreva o que precisa"
-                            description="Acrescente contexto, prazos, contrato relacionado ou outras informações que ajudem a equipe a atender a Requisição."
+                            description="Acrescente contexto, prazos, contrato relacionado ou outras informações que ajudem a equipe a atender a demanda."
                         />
                         <textarea
                             id="description"
@@ -267,7 +433,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                         </p>
                     </div>
 
-                    <div>
+                    <div v-if="form.in_pca !== false">
                         <FieldHelp
                             field-id="attachments"
                             label="Anexos (obrigatório)"
@@ -366,7 +532,11 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                             </Link>
                             <button
                                 type="submit"
-                                :disabled="form.processing"
+                                :disabled="
+                                    form.processing ||
+                                    (needsContractDetails &&
+                                        form.in_pca === false)
+                                "
                                 class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-indigo-600/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                             >
                                 <Send v-if="!form.processing" class="h-4 w-4" />
@@ -377,7 +547,7 @@ const submit = () => form.post('/chamados', { forceFormData: true });
                                 {{
                                     form.processing
                                         ? 'Enviando...'
-                                        : 'Enviar Requisição'
+                                        : 'Enviar Demanda'
                                 }}
                             </button>
                         </div>

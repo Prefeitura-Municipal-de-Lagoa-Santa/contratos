@@ -48,9 +48,21 @@ class ContractTicket extends Model
         'specifications',
         'justification',
         'ficha',
+        'in_pca',
+        'involves_other_secretariats',
+        'other_fichas',
         'status',
         'management_response',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'in_pca' => 'boolean',
+            'involves_other_secretariats' => 'boolean',
+            'other_fichas' => 'array',
+        ];
+    }
 
     public function user(): BelongsTo
     {

@@ -58,7 +58,7 @@ const formatDate = (value) => new Date(value).toLocaleDateString('pt-BR');
 const deleteTicket = (ticket) => {
     if (
         window.confirm(
-            `Tem certeza que deseja excluir a Requisição #${ticket.id}?`,
+            `Tem certeza que deseja excluir a Demanda #${ticket.id}?`,
         )
     ) {
         router.delete(`/chamados/${ticket.id}`);
@@ -67,7 +67,7 @@ const deleteTicket = (ticket) => {
 </script>
 
 <template>
-    <Head title="Requisições" />
+    <Head title="Demandas" />
 
     <AppLayout>
         <div
@@ -92,12 +92,12 @@ const deleteTicket = (ticket) => {
                             <h1
                                 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
                             >
-                                Requisições
+                                Demandas
                             </h1>
                             <p class="mt-1 text-sm text-slate-600 sm:text-base">
                                 {{
                                     canManage
-                                        ? 'Requisições recebidas pela Gestão de Contratos'
+                                        ? 'Demandas recebidas pela Gestão de Contratos'
                                         : 'Acompanhe suas solicitações à Gestão de Contratos'
                                 }}
                             </p>
@@ -108,7 +108,7 @@ const deleteTicket = (ticket) => {
                         class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                     >
                         <Plus class="h-5 w-5" />
-                        Abrir Requisição
+                        Abrir Demanda
                     </Link>
                 </header>
 
@@ -132,7 +132,7 @@ const deleteTicket = (ticket) => {
                                 >
                                     <span
                                         class="text-xs font-bold uppercase tracking-wide text-slate-500"
-                                        >Requisição #{{ ticket.id }}</span
+                                        >Demanda #{{ ticket.id }}</span
                                     >
                                     <span
                                         :class="[
@@ -193,7 +193,7 @@ const deleteTicket = (ticket) => {
                                     class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                                 >
                                     <Eye class="h-4 w-4" />
-                                    Ver Requisição
+                                    Ver Demanda
                                 </Link>
                                 <button
                                     v-if="isAdmin"
@@ -215,18 +215,18 @@ const deleteTicket = (ticket) => {
                 >
                     <LifeBuoy class="mx-auto mb-4 h-12 w-12 text-gray-400" />
                     <h2 class="text-lg font-semibold text-gray-900">
-                        Nenhuma Requisição encontrada
+                        Nenhuma Demanda encontrada
                     </h2>
                     <p class="mt-1 text-gray-500">
-                        Abra uma Requisição para entrar em contato com a Gestão
-                        de Contratos.
+                        Abra uma Demanda para entrar em contato com a Gestão de
+                        Contratos.
                     </p>
                     <Link
                         href="/chamados/novo"
                         class="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
                     >
                         <Plus class="h-4 w-4" />
-                        Abrir Requisição
+                        Abrir Demanda
                     </Link>
                 </div>
 

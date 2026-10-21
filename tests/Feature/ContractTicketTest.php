@@ -43,13 +43,22 @@ it('requires and stores specifications, justification, and ficha for contract re
 
     $this->actingAs($employee)
         ->post(route('chamados.store'), $baseTicket)
-        ->assertSessionHasErrors(['specifications', 'justification', 'ficha', 'attachments']);
+        ->assertSessionHasErrors([
+            'specifications',
+            'justification',
+            'ficha',
+            'in_pca',
+            'involves_other_secretariats',
+            'attachments',
+        ]);
 
     $this->post(route('chamados.store'), [
         ...$baseTicket,
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
         'ficha' => 'Ficha 123',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
         'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
     ])->assertRedirect();
 
@@ -59,8 +68,79 @@ it('requires and stores specifications, justification, and ficha for contract re
         'specifications' => 'Especificações do pedido.',
         'justification' => 'Justificativa do pedido.',
         'ficha' => 'Ficha 123',
+        'in_pca' => true,
+        'involves_other_secretariats' => false,
     ]);
 })->with(['novo_contrato', 'aditivo', 'compra_direta']);
+
+it('requires and stores additional fichas when a request involves other secretariats', function () {
+    $employee = User::factory()->create();
+    $requestData = [
+        'subject' => 'Solicitação para várias secretarias',
+        'category' => 'novo_contrato',
+        'description' => 'Descrição da solicitação.',
+        'specifications' => 'Especificações do pedido.',
+        'justification' => 'Justificativa do pedido.',
+        'ficha' => 'Ficha principal',
+        'in_pca' => true,
+        'involves_other_secretariats' => true,
+    ];
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            ...$requestData,
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors('other_fichas');
+
+    $this->post(route('chamados.store'), [
+        ...$requestData,
+        'other_fichas' => ['Ficha Secretaria A', 'Ficha Secretaria B'],
+        'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+    ])->assertRedirect();
+
+    $ticket = ContractTicket::latest('id')->firstOrFail();
+
+    $this->assertDatabaseHas('contract_tickets', [
+        'id' => $ticket->id,
+        'in_pca' => true,
+        'involves_other_secretariats' => true,
+    ]);
+
+    expect($ticket->other_fichas)->toBe(['Ficha Secretaria A', 'Ficha Secretaria B']);
+
+    $this->get(route('chamados.show', $ticket))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('ticket.in_pca', true)
+            ->where('ticket.involves_other_secretariats', true)
+            ->where('ticket.other_fichas.0', 'Ficha Secretaria A')
+            ->where('ticket.other_fichas.1', 'Ficha Secretaria B'));
+});
+
+it('does not allow submitting a contract demand that is not planned in the PCA', function () {
+    $employee = User::factory()->create();
+
+    $this->actingAs($employee)
+        ->post(route('chamados.store'), [
+            'subject' => 'Demanda fora do PCA',
+            'category' => 'novo_contrato',
+            'description' => 'Descrição da demanda.',
+            'specifications' => 'Especificações.',
+            'justification' => 'Justificativa.',
+            'ficha' => 'Ficha 123',
+            'in_pca' => false,
+            'involves_other_secretariats' => false,
+            'attachments' => [UploadedFile::fake()->create('dfd.pdf', 100, 'application/pdf')],
+        ])
+        ->assertSessionHasErrors([
+            'in_pca' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
+        ]);
+
+    $this->assertDatabaseMissing('contract_tickets', [
+        'subject' => 'Demanda fora do PCA',
+    ]);
+});
 
 it('does not require contract specifications and justification for other ticket categories', function () {
     $employee = User::factory()->create();

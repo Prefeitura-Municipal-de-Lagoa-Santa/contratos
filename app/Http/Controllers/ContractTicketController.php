@@ -41,6 +41,12 @@ class ContractTicketController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $requiresContractDetails = in_array(
+            $request->input('category'),
+            ['novo_contrato', 'aditivo', 'compra_direta'],
+            true,
+        );
+
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
@@ -63,8 +69,26 @@ class ContractTicketController extends Controller
                 'string',
                 'max:100',
             ],
+            'in_pca' => [
+                Rule::requiredIf($requiresContractDetails),
+                'boolean',
+                Rule::in($requiresContractDetails ? [true, 1, '1'] : [true, false, 1, 0, '1', '0']),
+            ],
+            'involves_other_secretariats' => [
+                Rule::requiredIf($requiresContractDetails),
+                'boolean',
+            ],
+            'other_fichas' => [
+                Rule::requiredIf($request->boolean('involves_other_secretariats')),
+                'nullable',
+                'array',
+                'min:1',
+            ],
+            'other_fichas.*' => ['required', 'string', 'max:100'],
             'attachments' => ['required', 'array', 'min:1', 'max:5'],
             'attachments.*' => ['required', 'file', 'max:10240', 'mimes:pdf', 'extensions:pdf'],
+        ], [
+            'in_pca.in' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
         ]);
 
         $ticket = ContractTicket::create([
@@ -80,6 +104,16 @@ class ContractTicketController extends Controller
             'ficha' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
                 ? $validated['ficha']
                 : null,
+            'in_pca' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+                ? $validated['in_pca']
+                : null,
+            'involves_other_secretariats' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+                ? $validated['involves_other_secretariats']
+                : null,
+            'other_fichas' => in_array($validated['category'], ['novo_contrato', 'aditivo', 'compra_direta'], true)
+                && $request->boolean('involves_other_secretariats')
+                    ? $validated['other_fichas']
+                    : null,
             'user_id' => $request->user()->id,
         ]);
 
