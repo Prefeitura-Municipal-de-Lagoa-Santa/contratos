@@ -207,7 +207,10 @@ const submit = () => {
                                 required
                                 :class="[
                                     fieldControlClass,
-                                    'appearance-none pr-11',
+                                    'appearance-none bg-none pr-11',
+                                    form.category
+                                        ? 'text-[15px] tracking-[0.01em] !text-slate-800 dark:!text-slate-100'
+                                        : 'text-sm font-normal tracking-normal !text-slate-400 dark:!text-slate-500',
                                 ]"
                             >
                                 <option value="" disabled>
