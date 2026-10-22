@@ -44,7 +44,7 @@ const identifierError = () => form.errors.username || form.errors.email;
                 <h1
                     class="text-xl font-semibold leading-tight tracking-wide text-white sm:text-2xl"
                 >
-                    Sistema de Requisições de Processos
+                    Central de Demandas - CD
                 </h1>
                 <p class="mt-1 text-sm text-white/65">
                     Acesse sua conta institucional
