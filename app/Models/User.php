@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
     public const ROLE_ADMINISTRATOR = 'administrator';
 
@@ -22,7 +23,7 @@ class User extends Authenticatable
     ];
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, MustVerifyEmailTrait, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -34,8 +35,11 @@ class User extends Authenticatable
         'email',
         'username',
         'password',
-        'is_admin',
         'role',
+    ];
+
+    protected $appends = [
+        'is_admin',
     ];
 
     /**
@@ -58,20 +62,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
         ];
     }
 
-    public function setIsAdminAttribute(bool $value): void
+    public function getIsAdminAttribute(): bool
     {
-        $this->attributes['is_admin'] = $value;
-        $this->attributes['role'] = $value ? self::ROLE_ADMINISTRATOR : self::ROLE_USER;
-    }
-
-    public function setRoleAttribute(string $value): void
-    {
-        $this->attributes['role'] = $value;
-        $this->attributes['is_admin'] = $value === self::ROLE_ADMINISTRATOR;
+        return $this->isAdministrator();
     }
 
     public function isAdministrator(): bool

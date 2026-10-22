@@ -1,7 +1,20 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia as Assert;
+
+it('uses role as the single source of administrator status', function () {
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $administrator = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
+
+    $manager->fill(['is_admin' => false])->save();
+
+    expect(Schema::hasColumn('users', 'is_admin'))->toBeFalse()
+        ->and($manager->refresh()->role)->toBe(User::ROLE_MANAGER)
+        ->and($manager->is_admin)->toBeFalse()
+        ->and($administrator->is_admin)->toBeTrue();
+});
 
 it('allows administrators to list users and change their profiles', function () {
     $admin = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
@@ -22,7 +35,6 @@ it('allows administrators to list users and change their profiles', function () 
     $this->assertDatabaseHas('users', [
         'id' => $employee->id,
         'role' => User::ROLE_MANAGER,
-        'is_admin' => false,
     ]);
 });
 
@@ -56,7 +68,6 @@ it('prevents the only administrator from removing their own administrator profil
     $this->assertDatabaseHas('users', [
         'id' => $admin->id,
         'role' => User::ROLE_ADMINISTRATOR,
-        'is_admin' => true,
     ]);
 });
 
