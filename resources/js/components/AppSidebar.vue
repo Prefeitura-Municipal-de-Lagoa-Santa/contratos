@@ -26,7 +26,6 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import AppLogo from './AppLogo.vue';
 
 const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.role === 'administrator');
@@ -116,23 +115,23 @@ const mainNavItems = computed<NavItem[]>(() => {
                             <div
                                 class="flex w-full items-center gap-3 overflow-hidden"
                             >
-                                <div
-                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-indigo-700 shadow-md transition-transform duration-300 group-hover/brand:scale-110"
-                                >
-                                    <AppLogo class="h-6 w-6 text-white" />
-                                </div>
+                                <img
+                                    src="/images/logos-completas.png"
+                                    alt="Prefeitura Municipal de Lagoa Santa"
+                                    class="h-10 w-[88px] shrink-0 object-contain transition-transform duration-300 group-hover/brand:scale-105"
+                                />
                                 <div
                                     class="flex min-w-0 flex-1 flex-col opacity-100 transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0"
                                 >
                                     <span
-                                        class="mb-1 text-[8px] font-black uppercase leading-tight tracking-[0.1em] text-primary-400"
+                                        class="mb-1 text-[8px] font-black uppercase leading-tight tracking-[0.1em] text-blue-300"
                                     >
-                                        PROCESSOS LICITATÓRIOS
+                                        PREFEITURA MUNICIPAL
                                     </span>
                                     <span
-                                        class="bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-sm font-black leading-tight tracking-tight text-transparent"
+                                        class="text-sm font-black leading-tight tracking-tight text-white"
                                     >
-                                        Processos Licitatórios
+                                        Requisições de Processos
                                     </span>
                                 </div>
                             </div>
@@ -142,7 +141,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent class="sidebar-content mt-4">
+        <SidebarContent class="sidebar-content !mt-0 bg-slate-950 pt-3">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
@@ -158,27 +157,15 @@ const mainNavItems = computed<NavItem[]>(() => {
 
 <style scoped>
 .sidebar-modern {
-    @apply border-r border-gray-100 bg-white shadow-sm !important;
+    @apply border-r border-white/10 bg-slate-950 shadow-xl shadow-black/20 !important;
 }
 
 .sidebar-modern :deep([data-sidebar='sidebar']) {
-    @apply bg-white !important;
-}
-
-.dark .sidebar-modern {
-    @apply border-gray-700 bg-slate-800 !important;
-}
-
-.dark .sidebar-modern :deep([data-sidebar='sidebar']) {
-    @apply bg-slate-800 text-slate-100 !important;
+    @apply bg-slate-950 text-slate-100 !important;
 }
 
 .sidebar-header {
-    @apply border-none bg-white px-4 pb-2 pt-8 !important;
-}
-
-.dark .sidebar-header {
-    @apply bg-slate-800 !important;
+    @apply border-none bg-slate-950 px-4 pb-2 pt-8 !important;
 }
 
 .sidebar-brand {
@@ -186,11 +173,7 @@ const mainNavItems = computed<NavItem[]>(() => {
 }
 
 .sidebar-content {
-    @apply flex-1 overflow-y-auto bg-white px-2 !important;
-}
-
-.dark .sidebar-content {
-    @apply bg-slate-800 !important;
+    @apply mt-0 flex-1 overflow-y-auto bg-slate-950 px-2 pt-3 !important;
 }
 
 .sidebar-content::-webkit-scrollbar {
@@ -206,10 +189,6 @@ const mainNavItems = computed<NavItem[]>(() => {
 }
 
 .sidebar-footer {
-    @apply mt-auto border-t border-gray-50 bg-white p-2 !important;
-}
-
-.dark .sidebar-footer {
-    @apply border-gray-700 bg-slate-800 !important;
+    @apply mt-auto border-t border-white/10 bg-slate-950 p-2 !important;
 }
 </style>

@@ -20,7 +20,7 @@ const currentYear = new Date().getFullYear();
                 </span>
                 <div class="leading-tight">
                     <p class="text-sm font-semibold text-white">
-                        Processos Licitatórios
+                        Requisições de Processos
                     </p>
                     <p class="mt-0.5 text-xs text-slate-400">
                         Prefeitura de Lagoa Santa

@@ -41,7 +41,7 @@ const toggleTheme = () => {
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg border-white/10 bg-slate-900 text-slate-100"
                     :side="
                         isMobile
                             ? 'bottom'
@@ -56,12 +56,12 @@ const toggleTheme = () => {
                 </DropdownMenuContent>
             </DropdownMenu>
             <SidebarMenuButton
-                class="w-9 shrink-0 justify-center"
+                class="w-9 shrink-0 justify-center !text-white"
                 tooltip="Alternar tema claro/escuro"
                 aria-label="Alternar tema claro/escuro"
                 @click="toggleTheme"
             >
-                <Moon class="size-4" />
+                <Moon class="size-4 !text-white" />
             </SidebarMenuButton>
         </SidebarMenuItem>
     </SidebarMenu>
@@ -69,10 +69,10 @@ const toggleTheme = () => {
 
 <style scoped>
 .user-menu-button {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 !important;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-slate-200 transition-all duration-200 hover:bg-white/10 !important;
 }
 
 .user-menu-button[data-state='open'] {
-    @apply bg-gray-50 shadow-sm !important;
+    @apply bg-white/10 shadow-sm !important;
 }
 </style>

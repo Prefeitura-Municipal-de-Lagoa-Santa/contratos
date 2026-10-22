@@ -41,15 +41,23 @@ const isExpanded = (title: string) => expandedItems.value.has(title);
                     <SidebarMenuButton
                         @click="toggleItem(item.title)"
                         :tooltip="item.title"
-                        class="nav-item group/item"
+                        class="nav-item group/item !text-slate-200"
                         :data-state="isExpanded(item.title) ? 'open' : 'closed'"
                     >
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent group-hover/item:bg-primary-50 group-hover/item:text-primary-600 transition-colors">
-                            <component :is="item.icon" class="nav-icon" />
+                        <div
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent text-slate-200 transition-colors group-hover/item:bg-white/10 group-hover/item:text-white"
+                        >
+                            <component
+                                :is="item.icon"
+                                class="nav-icon !text-slate-300"
+                            />
                         </div>
-                        <span class="nav-text">{{ item.title }}</span>
-                        <ChevronRight 
-                            class="nav-chevron"
+                        <span class="nav-text !text-slate-200">{{
+                            item.title
+                        }}</span>
+                        <ChevronRight
+                            class="nav-chevron !text-white !opacity-100"
+                            :style="{ color: '#fff', stroke: '#fff' }"
                             :class="isExpanded(item.title) ? 'rotate-90' : ''"
                         />
                     </SidebarMenuButton>
@@ -62,16 +70,29 @@ const isExpanded = (title: string) => expandedItems.value.has(title);
                             leave-from-class="max-h-[500px] opacity-100"
                             leave-to-class="max-h-0 opacity-0"
                         >
-                            <SidebarMenuSub v-show="isExpanded(item.title)" class="nav-submenu">
-                                <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
+                            <SidebarMenuSub
+                                v-show="isExpanded(item.title)"
+                                class="nav-submenu"
+                            >
+                                <SidebarMenuSubItem
+                                    v-for="subItem in item.items"
+                                    :key="subItem.title"
+                                >
                                     <SidebarMenuSubButton
                                         as-child
-                                        :is-active="urlIsActive(subItem.href!, page.url)"
-                                        class="nav-subitem"
+                                        :is-active="
+                                            urlIsActive(subItem.href!, page.url)
+                                        "
+                                        class="nav-subitem !text-slate-300"
                                     >
                                         <Link :href="subItem.href!">
-                                            <component :is="subItem.icon" class="nav-subicon" />
-                                            <span>{{ subItem.title }}</span>
+                                            <component
+                                                :is="subItem.icon"
+                                                class="nav-subicon !text-slate-300"
+                                            />
+                                            <span class="!text-slate-300">{{
+                                                subItem.title
+                                            }}</span>
                                         </Link>
                                     </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -86,13 +107,20 @@ const isExpanded = (title: string) => expandedItems.value.has(title);
                         as-child
                         :is-active="urlIsActive(item.href!, page.url)"
                         :tooltip="item.title"
-                        class="nav-item group/item"
+                        class="nav-item group/item !text-slate-200"
                     >
                         <Link :href="item.href!">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent group-active:bg-primary-50 group-hover/item:bg-primary-50 group-hover/item:text-primary-600 transition-colors">
-                                <component :is="item.icon" class="nav-icon" />
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent text-slate-200 transition-colors group-hover/item:bg-white/10 group-hover/item:text-white group-active:bg-white/10"
+                            >
+                                <component
+                                    :is="item.icon"
+                                    class="nav-icon !text-slate-300"
+                                />
                             </div>
-                            <span class="nav-text">{{ item.title }}</span>
+                            <span class="nav-text !text-slate-200">{{
+                                item.title
+                            }}</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -103,19 +131,19 @@ const isExpanded = (title: string) => expandedItems.value.has(title);
 
 <style scoped>
 .nav-item {
-    @apply flex items-center gap-3 px-3 py-2 rounded-xl text-gray-500 font-medium transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 !important;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-slate-200 opacity-100 transition-all duration-200 hover:bg-white/10 hover:text-white !important;
 }
 
-.nav-item[data-active="true"] {
-    @apply bg-primary-50 text-primary-700 font-bold shadow-sm !important;
+.nav-item[data-active='true'] {
+    @apply bg-blue-500/15 font-bold text-blue-100 shadow-sm !important;
 }
 
-.nav-item[data-active="true"] .nav-icon {
-    @apply text-primary-600;
+.nav-item[data-active='true'] .nav-icon {
+    @apply text-blue-200;
 }
 
 .nav-icon {
-    @apply w-5 h-5 flex-shrink-0 transition-transform duration-200;
+    @apply h-5 w-5 flex-shrink-0 transition-transform duration-200;
 }
 
 .nav-item:hover .nav-icon {
@@ -123,30 +151,30 @@ const isExpanded = (title: string) => expandedItems.value.has(title);
 }
 
 .nav-text {
-    @apply flex-1 text-sm;
+    @apply flex-1 text-sm text-slate-200 opacity-100;
 }
 
 .nav-chevron {
-    @apply w-4 h-4 opacity-40 transition-transform duration-300;
+    @apply h-4 w-4 text-slate-300 opacity-70 transition-transform duration-300;
 }
 
 .nav-submenu {
-    @apply ml-7 mt-1 border-l border-gray-100 pl-4 space-y-1 mb-2 !important;
+    @apply mb-2 ml-7 mt-1 space-y-1 border-l border-white/10 pl-4 !important;
 }
 
 .nav-subitem {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-gray-500 text-[13px] transition-all hover:bg-gray-50 hover:text-gray-900 !important;
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-400 transition-all hover:bg-white/10 hover:text-white !important;
 }
 
-.nav-subitem[data-active="true"] {
-    @apply text-primary-600 font-bold bg-primary-50/50 !important;
+.nav-subitem[data-active='true'] {
+    @apply bg-blue-500/10 font-bold text-blue-200 !important;
 }
 
 .nav-subicon {
-    @apply w-4 h-4 shrink-0 opacity-60 transition-opacity;
+    @apply h-4 w-4 shrink-0 opacity-60 transition-opacity;
 }
 
 .nav-subitem:hover .nav-subicon {
-    @apply opacity-100 text-primary-600 scale-110;
+    @apply scale-110 text-blue-300 opacity-100;
 }
 </style>
