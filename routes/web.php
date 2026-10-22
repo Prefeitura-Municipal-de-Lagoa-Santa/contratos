@@ -48,7 +48,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/appearance', [App\Http\Controllers\Settings\AppearanceController::class, 'edit'])->name('settings.appearance.edit');
 
-        Route::get('/two-factor', [App\Http\Controllers\Settings\TwoFactorAuthenticationController::class, 'show'])->name('settings.two-factor.show');
     });
 
     // Profile routes (legacy compatibility)

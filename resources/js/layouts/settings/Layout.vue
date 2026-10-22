@@ -5,7 +5,6 @@ import { Separator } from '@/components/ui/separator';
 import { toUrl, urlIsActive } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/settings/appearance';
 import { edit as editProfile } from '@/routes/settings/profile';
-import { show } from '@/routes/settings/two-factor';
 import { edit as editPassword } from '@/routes/settings/password';
 import { type NavItem, type BreadcrumbItemType } from '@/types';
 import { Link } from '@inertiajs/vue3';
@@ -27,10 +26,6 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Senha',
         href: editPassword(),
-    },
-    {
-        title: 'Autenticação de Dois Fatores',
-        href: show(),
     },
     {
         title: 'Aparência',
