@@ -26,6 +26,7 @@ class PatrimonioController extends Controller
         return Inertia::render('Patrimonio/Index', [
             'patrimonios' => $query->latest()->paginate(10)->withQueryString(),
             'filters' => $request->only(['search']),
+            'canManage' => $request->user()->canManageTickets(),
         ]);
     }
 

@@ -76,8 +76,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/ferias/{id}', [App\Http\Controllers\VacationRequestController::class, 'show'])->name('ferias.show')->whereNumber('id');
     Route::patch('/ferias/{id}/cancelar', [App\Http\Controllers\VacationRequestController::class, 'cancel'])->name('ferias.cancel')->whereNumber('id');
 
-    // Patrimônios routes
-    Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
+    Route::get('/patrimonios', [App\Http\Controllers\PatrimonioController::class, 'index'])
+        ->name('patrimonios.index');
+
+    Route::middleware('manager')->group(function () {
+        Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class)
+            ->except(['index', 'show']);
+    });
 });
 
 require __DIR__.'/auth.php';
