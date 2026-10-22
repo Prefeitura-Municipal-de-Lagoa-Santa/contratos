@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    ticketCategoryLabels,
+    ticketStatusLabels,
+} from '@/lib/contractTicketLabels';
 import { formatDate } from '@/lib/dateFormat';
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     CalendarDays,
+    Check,
     Eye,
     LifeBuoy,
     Plus,
     Trash2,
     UserRound,
     UserRoundCog,
+    X,
 } from 'lucide-vue-next';
 
 defineProps({
@@ -43,6 +49,16 @@ const deleteTicket = (ticket) => {
         router.delete(`/chamados/${ticket.id}`);
     }
 };
+
+const decideTicket = (ticket, status) => {
+    router.patch(
+        `/chamados/${ticket.id}/decisao`,
+        { status },
+        { preserveScroll: true },
+    );
+};
+
+const isFinalDecision = (status) => ['aprovado', 'recusado'].includes(status);
 </script>
 
 <template>
@@ -133,7 +149,11 @@ const deleteTicket = (ticket) => {
                                     <span
                                         class="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
                                     >
-                                        {{ ticketCategoryLabels[ticket.category] }}
+                                        {{
+                                            ticketCategoryLabels[
+                                                ticket.category
+                                            ]
+                                        }}
                                     </span>
                                     <span
                                         class="inline-flex items-center gap-1.5"
@@ -174,6 +194,33 @@ const deleteTicket = (ticket) => {
                                     <Eye class="h-4 w-4" />
                                     Ver Demanda
                                 </Link>
+                                <template
+                                    v-if="
+                                        canManage &&
+                                        !isFinalDecision(ticket.status)
+                                    "
+                                >
+                                    <button
+                                        type="button"
+                                        @click="
+                                            decideTicket(ticket, 'aprovado')
+                                        "
+                                        class="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                                    >
+                                        <Check class="h-4 w-4" />
+                                        Aprovar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="
+                                            decideTicket(ticket, 'recusado')
+                                        "
+                                        class="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                                    >
+                                        <X class="h-4 w-4" />
+                                        Recusar
+                                    </button>
+                                </template>
                                 <button
                                     v-if="isAdmin"
                                     type="button"

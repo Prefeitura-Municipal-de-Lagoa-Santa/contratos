@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    ticketCategoryLabels,
+    ticketStatusLabels,
+} from '@/lib/contractTicketLabels';
 import { formatDateTime } from '@/lib/dateFormat';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
@@ -282,7 +286,7 @@ const decide = (status) =>
                         @submit.prevent="submit"
                         class="space-y-5 border-t border-gray-100 pt-6"
                     >
-                        <h2 class="text-lg font-semibold text-gray-900">
+                        <h2 class="text-base font-semibold text-gray-900">
                             Atendimento da Demanda
                         </h2>
                         <div>
@@ -295,7 +299,7 @@ const decide = (status) =>
                                 id="status"
                                 v-model="form.status"
                                 required
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option
                                     v-for="status in props.statuses"
@@ -321,7 +325,7 @@ const decide = (status) =>
                             <select
                                 id="responsible_user_id"
                                 v-model="form.responsible_user_id"
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option value="">Não definido</option>
                                 <option
@@ -351,7 +355,7 @@ const decide = (status) =>
                                 rows="5"
                                 maxlength="10000"
                                 placeholder="Escreva uma resposta ou orientação para o servidor."
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             />
                             <p
                                 v-if="form.errors.management_response"
