@@ -36,22 +36,18 @@ const showAvatar = computed(
         >
             {{ user.name }}
         </span>
-        <span v-if="showEmail" class="text-muted-foreground truncate text-xs">{{
-            user.email
-        }}</span>
+        <span v-if="showEmail" class="truncate text-xs text-slate-300">
+            {{ user.email }}
+        </span>
     </div>
 </template>
 
 <style>
 .user-name {
-    color: #0f172a;
-}
-
-.dark .user-name {
     color: #f8fafc !important;
 }
 
-.dark .user-avatar-fallback {
+.user-avatar-fallback {
     color: #fff !important;
 }
 </style>

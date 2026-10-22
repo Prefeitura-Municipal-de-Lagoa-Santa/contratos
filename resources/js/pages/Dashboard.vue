@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import {
-    CalendarDays,
-    LifeBuoy,
-    MessageSquarePlus,
-    Package,
-} from 'lucide-vue-next';
+import { CalendarDays, FilePenLine, LifeBuoy, Package } from 'lucide-vue-next';
 
 const page = usePage();
 
@@ -39,7 +34,7 @@ const shortcuts = [
         title: 'Abrir Requisição',
         description: 'Envie uma solicitação para a equipe de gestão.',
         href: '/chamados/novo',
-        icon: MessageSquarePlus,
+        icon: FilePenLine,
         style: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
         availableToUser: true,
     },

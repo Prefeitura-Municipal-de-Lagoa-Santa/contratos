@@ -17,7 +17,6 @@ test('authenticated users can visit the dashboard', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Dashboard')
             ->missing('stats')
-            ->missing('recentContracts')
             ->missing('statusData')
             ->missing('timelineData')
             ->missing('typeData'));

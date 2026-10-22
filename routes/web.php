@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,24 +9,9 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Contract routes
-    Route::get('/contratos/novo', [App\Http\Controllers\ContractController::class, 'create'])->name('contracts.create');
-    Route::post('/contratos', [App\Http\Controllers\ContractController::class, 'store'])->name('contracts.store');
-    Route::get('/contratos', [App\Http\Controllers\ContractController::class, 'index'])->name('contracts.index');
-    Route::get('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'show'])->name('contracts.show');
-    Route::get('/contratos/{contract}/editar', [App\Http\Controllers\ContractController::class, 'edit'])->name('contracts.edit');
-    Route::patch('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'update'])->name('contracts.update');
-    Route::delete('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'destroy'])->name('contracts.destroy');
-
-    // Contract Files routes
-    Route::post('/contratos/{contract}/arquivos', [App\Http\Controllers\ContractFileController::class, 'store'])->name('contract-files.store');
-    Route::get('/contratos/arquivos/{file}/download', [App\Http\Controllers\ContractFileController::class, 'download'])->name('contract-files.download');
-    Route::get('/contratos/arquivos/{file}/preview', [App\Http\Controllers\ContractFileController::class, 'preview'])->name('contract-files.preview');
-    Route::delete('/contratos/arquivos/{file}', [App\Http\Controllers\ContractFileController::class, 'destroy'])->name('contract-files.destroy');
-
     // Contract support tickets
     Route::get('/chamados', [App\Http\Controllers\ContractTicketController::class, 'index'])->name('chamados.index');
     Route::get('/chamados/novo', [App\Http\Controllers\ContractTicketController::class, 'create'])->name('chamados.create');
@@ -63,27 +47,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/appearance', [App\Http\Controllers\Settings\AppearanceController::class, 'edit'])->name('settings.appearance.edit');
 
-        Route::get('/two-factor', [App\Http\Controllers\Settings\TwoFactorAuthenticationController::class, 'show'])->name('settings.two-factor.show');
     });
-
-    // Profile routes (legacy compatibility)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Internal Communications routes
-    Route::get('/comunicacoes-internas', [App\Http\Controllers\InternalCommunicationController::class, 'index'])->name('internal-communications.index');
-    Route::get('/comunicacoes-internas/nova', [App\Http\Controllers\InternalCommunicationController::class, 'create'])->name('internal-communications.create');
-    Route::post('/comunicacoes-internas', [App\Http\Controllers\InternalCommunicationController::class, 'store'])->name('internal-communications.store');
-    Route::get('/comunicacoes-internas/{id}', [App\Http\Controllers\InternalCommunicationController::class, 'show'])->name('internal-communications.show');
-    Route::get('/comunicacoes-internas/{id}/pdf', [App\Http\Controllers\InternalCommunicationController::class, 'exportPdf'])->name('internal-communications.pdf');
-
-    // Oficios routes
-    Route::get('/oficios', [App\Http\Controllers\OficioController::class, 'index'])->name('oficios.index');
-    Route::get('/oficios/novo', [App\Http\Controllers\OficioController::class, 'create'])->name('oficios.create');
-    Route::post('/oficios', [App\Http\Controllers\OficioController::class, 'store'])->name('oficios.store');
-    Route::get('/oficios/{id}', [App\Http\Controllers\OficioController::class, 'show'])->name('oficios.show');
-    Route::get('/oficios/{id}/pdf', [App\Http\Controllers\OficioController::class, 'exportPdf'])->name('oficios.pdf');
 
     // Férias routes
     Route::get('/ferias', [App\Http\Controllers\VacationRequestController::class, 'index'])->name('ferias.index');
@@ -105,8 +69,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/ferias/{id}', [App\Http\Controllers\VacationRequestController::class, 'show'])->name('ferias.show')->whereNumber('id');
     Route::patch('/ferias/{id}/cancelar', [App\Http\Controllers\VacationRequestController::class, 'cancel'])->name('ferias.cancel')->whereNumber('id');
 
-    // Patrimônios routes
-    Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
+    Route::get('/patrimonios', [App\Http\Controllers\PatrimonioController::class, 'index'])
+        ->name('patrimonios.index');
+
+    Route::middleware('manager')->group(function () {
+        Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class)
+            ->except(['index', 'show']);
+    });
 });
 
 require __DIR__.'/auth.php';

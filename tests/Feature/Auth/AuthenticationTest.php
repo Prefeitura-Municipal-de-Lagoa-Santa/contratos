@@ -21,6 +21,21 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
+test('unverified users are redirected to the dashboard after login', function () {
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Dashboard'));
+});
+
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
@@ -30,6 +45,24 @@ test('users can not authenticate with invalid password', function () {
     ]);
 
     $this->assertGuest();
+});
+
+test('login throttle error is attached to the username field shown by the login form', function () {
+    $identifier = 'rate-limited-user';
+
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $this->post('/login', [
+            'username' => $identifier,
+            'password' => 'wrong-password',
+        ]);
+    }
+
+    $this->post('/login', [
+        'username' => $identifier,
+        'password' => 'wrong-password',
+    ])->assertSessionHasErrors('username');
+
+    expect(session('errors')->getBag('default')->has('email'))->toBeFalse();
 });
 
 test('users can authenticate using their LDAP username', function () {

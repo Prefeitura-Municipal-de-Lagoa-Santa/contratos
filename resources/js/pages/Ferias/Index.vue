@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/dateFormat';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import {
@@ -52,11 +53,6 @@ const filteredRequests = computed(() => {
         formatDate(req.start_date).includes(query)
     );
 });
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-};
 
 const changeYear = (year) => {
     selectedYear.value = year;

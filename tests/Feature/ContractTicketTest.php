@@ -398,7 +398,7 @@ it('only allows administrators to delete tickets', function () {
 
 it('does not allow assigning a regular user as responsible', function () {
     $employee = User::factory()->create();
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
     $ticket = ContractTicket::create([
         'user_id' => $employee->id,
         'subject' => 'Chamado com responsável inválido',

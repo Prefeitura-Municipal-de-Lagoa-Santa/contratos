@@ -1,7 +1,20 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia as Assert;
+
+it('uses role as the single source of administrator status', function () {
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $administrator = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
+
+    $manager->fill(['is_admin' => false])->save();
+
+    expect(Schema::hasColumn('users', 'is_admin'))->toBeFalse()
+        ->and($manager->refresh()->role)->toBe(User::ROLE_MANAGER)
+        ->and($manager->is_admin)->toBeFalse()
+        ->and($administrator->is_admin)->toBeTrue();
+});
 
 it('allows administrators to list users and change their profiles', function () {
     $admin = User::factory()->create(['role' => User::ROLE_ADMINISTRATOR]);
@@ -22,7 +35,6 @@ it('allows administrators to list users and change their profiles', function () 
     $this->assertDatabaseHas('users', [
         'id' => $employee->id,
         'role' => User::ROLE_MANAGER,
-        'is_admin' => false,
     ]);
 });
 
@@ -56,7 +68,6 @@ it('prevents the only administrator from removing their own administrator profil
     $this->assertDatabaseHas('users', [
         'id' => $admin->id,
         'role' => User::ROLE_ADMINISTRATOR,
-        'is_admin' => true,
     ]);
 });
 
@@ -69,19 +80,4 @@ it('allows managers to manage tickets and vacation approvals but not user profil
         ->assertInertia(fn (Assert $page) => $page->component('Ferias/Approvals'));
 
     $this->get(route('users.index'))->assertForbidden();
-});
-
-it('assigns newly registered accounts the regular user profile', function () {
-    $this->post(route('register'), [
-        'name' => 'Novo Usuário',
-        'email' => 'novo.usuario@example.com',
-        'password' => 'Password123!',
-        'password_confirmation' => 'Password123!',
-    ])->assertRedirect(route('dashboard'));
-
-    $this->assertDatabaseHas('users', [
-        'email' => 'novo.usuario@example.com',
-        'role' => User::ROLE_USER,
-        'is_admin' => false,
-    ]);
 });

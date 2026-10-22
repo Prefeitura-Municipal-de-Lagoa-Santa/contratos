@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate, formatDateTime } from '@/lib/dateFormat';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import {
@@ -52,16 +53,6 @@ const statusConfig = {
         icon: Ban,
         label: 'Cancelado',
     },
-};
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-};
-
-const formatDateTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-BR');
 };
 
 const cancelRequest = () => {

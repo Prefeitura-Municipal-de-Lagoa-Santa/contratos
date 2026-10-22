@@ -1,19 +1,33 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
+test('public registration is disabled when LDAP is not enabled', function () {
+    config(['ldap.enabled' => false]);
 
-    $response->assertStatus(200);
-});
+    $this->get('/register')->assertNotFound();
 
-test('new users can register', function () {
-    $response = $this->post('/register', [
+    $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]);
+    ])->assertNotFound();
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertGuest();
+    $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
+});
+
+test('public registration remains disabled when LDAP is enabled', function () {
+    config(['ldap.enabled' => true]);
+
+    $this->get('/register')->assertNotFound();
+
+    $this->post('/register', [
+        'name' => 'LDAP Bypass User',
+        'email' => 'ldap-bypass@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertNotFound();
+
+    $this->assertGuest();
+    $this->assertDatabaseMissing('users', ['email' => 'ldap-bypass@example.com']);
 });

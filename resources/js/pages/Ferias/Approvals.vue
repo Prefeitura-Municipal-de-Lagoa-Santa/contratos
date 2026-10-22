@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/dateFormat';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import {
@@ -24,11 +25,6 @@ const rejectForm = useForm({
 
 const selectedRequest = ref(null);
 const showRejectModal = ref(false);
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-};
 
 const approve = (id) => {
     router.patch(`/ferias/${id}/aprovar`, {}, {

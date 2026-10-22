@@ -14,7 +14,7 @@ withDefaults(
 
 <template>
     <header
-        class="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-16 shrink-0 items-center justify-between gap-2 px-6 transition-[width,height] ease-linear md:px-4"
+        class="app-sidebar-header group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-white/[0.04] px-6 backdrop-blur-xl transition-[width,height] ease-linear md:px-4"
     >
         <div class="flex min-w-0 flex-1 items-center gap-2">
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
@@ -23,3 +23,13 @@ withDefaults(
         </div>
     </header>
 </template>
+
+<style scoped>
+.app-sidebar-header :deep([data-slot='breadcrumb-page']) {
+    color: #f8fafc;
+}
+
+.app-sidebar-header :deep([data-slot='breadcrumb-link']) {
+    color: #cbd5e1;
+}
+</style>

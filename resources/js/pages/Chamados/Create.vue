@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FieldHelp from '@/components/FieldHelp.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { ticketCategoryLabels } from '@/lib/contractTicketLabels';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
@@ -17,19 +18,6 @@ import { computed, watch } from 'vue';
 const props = defineProps({
     categories: Array,
 });
-
-const categoryLabels = {
-    contrato: 'Contrato',
-    novo_processo: 'Novo processo',
-    novo_contrato: 'Novo processo',
-    aditivo: 'Aditivo',
-    compra_direta: 'Compra direta',
-    renovacao: 'Renovação',
-    documentacao: 'Documentação',
-    fiscalizacao: 'Fiscalização',
-    pagamento: 'Pagamento',
-    outro: 'Outro assunto',
-};
 
 const fieldControlClass =
     'w-full rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-3.5 font-sans text-[15px] font-normal leading-6 tracking-[0.01em] text-slate-800 shadow-sm shadow-slate-900/[0.03] transition duration-200 placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 hover:border-indigo-200 hover:bg-white focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-700 dark:hover:bg-slate-800';
@@ -207,7 +195,10 @@ const submit = () => {
                                 required
                                 :class="[
                                     fieldControlClass,
-                                    'appearance-none pr-11',
+                                    'appearance-none bg-none pr-11',
+                                    form.category
+                                        ? 'text-[15px] tracking-[0.01em] !text-slate-800 dark:!text-slate-100'
+                                        : 'text-sm font-normal tracking-normal !text-slate-400 dark:!text-slate-500',
                                 ]"
                             >
                                 <option value="" disabled>
@@ -218,7 +209,7 @@ const submit = () => {
                                     :key="category"
                                     :value="category"
                                 >
-                                    {{ categoryLabels[category] }}
+                                    {{ ticketCategoryLabels[category] }}
                                 </option>
                             </select>
                             <ChevronDown

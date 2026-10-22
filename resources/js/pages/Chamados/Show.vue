@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDateTime } from '@/lib/dateFormat';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
@@ -19,27 +20,6 @@ const props = defineProps({
     responsibles: Array,
 });
 
-const statusLabels = {
-    aberto: 'Aberto',
-    em_atendimento: 'Em atendimento',
-    resolvido: 'Resolvido',
-    aprovado: 'Aprovado',
-    recusado: 'Recusado',
-};
-
-const categoryLabels = {
-    contrato: 'Contrato',
-    novo_processo: 'Novo processo',
-    novo_contrato: 'Novo processo',
-    aditivo: 'Aditivo',
-    compra_direta: 'Compra direta',
-    renovacao: 'Renovação',
-    documentacao: 'Documentação',
-    fiscalizacao: 'Fiscalização',
-    pagamento: 'Pagamento',
-    outro: 'Outro assunto',
-};
-
 const form = useForm({
     status: props.ticket.status,
     management_response: props.ticket.management_response ?? '',
@@ -48,7 +28,6 @@ const form = useForm({
 
 const isFinalDecision = ['aprovado', 'recusado'].includes(props.ticket.status);
 const decisionForm = useForm({ status: '' });
-const formatDate = (value) => new Date(value).toLocaleString('pt-BR');
 const submit = () => form.patch(`/chamados/${props.ticket.id}`);
 const decide = (status) =>
     decisionForm
@@ -109,7 +88,7 @@ const decide = (status) =>
                         <span
                             class="rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-800"
                         >
-                            {{ categoryLabels[ticket.category] }}
+                            {{ ticketCategoryLabels[ticket.category] }}
                         </span>
                         <span
                             :class="[
@@ -121,7 +100,7 @@ const decide = (status) =>
                                       : 'bg-gray-100 text-gray-700',
                             ]"
                         >
-                            {{ statusLabels[ticket.status] }}
+                            {{ ticketStatusLabels[ticket.status] }}
                         </span>
                     </div>
 
@@ -156,7 +135,7 @@ const decide = (status) =>
                         <span class="font-medium text-gray-700">{{
                             ticket.user.name
                         }}</span>
-                        em {{ formatDate(ticket.created_at) }}
+                        em {{ formatDateTime(ticket.created_at) }}
                         <p class="mt-1">
                             Responsável:
                             <span class="font-medium text-gray-700">{{
@@ -323,7 +302,7 @@ const decide = (status) =>
                                     :key="status"
                                     :value="status"
                                 >
-                                    {{ statusLabels[status] }}
+                                    {{ ticketStatusLabels[status] }}
                                 </option>
                             </select>
                             <p
