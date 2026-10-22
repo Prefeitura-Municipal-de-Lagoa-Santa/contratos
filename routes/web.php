@@ -13,21 +13,6 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Contract routes
-    Route::get('/contratos/novo', [App\Http\Controllers\ContractController::class, 'create'])->name('contracts.create');
-    Route::post('/contratos', [App\Http\Controllers\ContractController::class, 'store'])->name('contracts.store');
-    Route::get('/contratos', [App\Http\Controllers\ContractController::class, 'index'])->name('contracts.index');
-    Route::get('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'show'])->name('contracts.show');
-    Route::get('/contratos/{contract}/editar', [App\Http\Controllers\ContractController::class, 'edit'])->name('contracts.edit');
-    Route::patch('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'update'])->name('contracts.update');
-    Route::delete('/contratos/{contract}', [App\Http\Controllers\ContractController::class, 'destroy'])->name('contracts.destroy');
-
-    // Contract Files routes
-    Route::post('/contratos/{contract}/arquivos', [App\Http\Controllers\ContractFileController::class, 'store'])->name('contract-files.store');
-    Route::get('/contratos/arquivos/{file}/download', [App\Http\Controllers\ContractFileController::class, 'download'])->name('contract-files.download');
-    Route::get('/contratos/arquivos/{file}/preview', [App\Http\Controllers\ContractFileController::class, 'preview'])->name('contract-files.preview');
-    Route::delete('/contratos/arquivos/{file}', [App\Http\Controllers\ContractFileController::class, 'destroy'])->name('contract-files.destroy');
-
     // Contract support tickets
     Route::get('/chamados', [App\Http\Controllers\ContractTicketController::class, 'index'])->name('chamados.index');
     Route::get('/chamados/novo', [App\Http\Controllers\ContractTicketController::class, 'create'])->name('chamados.create');

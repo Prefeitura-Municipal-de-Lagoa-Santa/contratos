@@ -39,12 +39,6 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
-                                <NavLink
-                                    :href="route('contracts.create')"
-                                    :active="route().current('contracts.create')"
-                                >
-                                    Novo Contrato
-                                </NavLink>
                             </div>
                         </div>
 
@@ -151,12 +145,6 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('contracts.create')"
-                            :active="route().current('contracts.create')"
-                        >
-                            Novo Contrato
                         </ResponsiveNavLink>
                     </div>
 
