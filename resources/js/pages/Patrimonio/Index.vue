@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatDateValue } from '@/lib/dateFormat';
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import {
@@ -39,7 +40,7 @@ watch(search, (value) => {
 
 const formatDate = (date) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('pt-BR');
+    return formatDateValue(date);
 };
 
 const deletePatrimonio = (id) => {

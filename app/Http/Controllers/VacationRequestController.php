@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VacationRequest;
-use App\Models\VacationBalance;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\VacationBalance;
+use App\Models\VacationRequest;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class VacationRequestController extends Controller
 {
@@ -17,7 +19,16 @@ class VacationRequestController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $year = $request->get('year', date('Y'));
+        $validated = $request->validate([
+            'year' => [
+                'sometimes',
+                'required',
+                'integer',
+                'digits:4',
+                Rule::in(array_map('strval', $this->getAvailableYears())),
+            ],
+        ]);
+        $year = (string) ($validated['year'] ?? date('Y'));
 
         $vacationRequests = VacationRequest::with('approver')
             ->where('user_id', $user->id)
@@ -60,7 +71,7 @@ class VacationRequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'start_date' => 'required|date|after_or_equal:' . Carbon::today()->addDays(VacationRequest::MINIMUM_ADVANCE_DAYS)->format('Y-m-d'),
+            'start_date' => 'required|date|after_or_equal:'.Carbon::today()->addDays(VacationRequest::MINIMUM_ADVANCE_DAYS)->format('Y-m-d'),
             'period_days' => 'required|integer|in:15,30',
             'supervisor_id' => 'required|exists:users,id',
             'observations' => 'nullable|string|max:500',
@@ -73,9 +84,9 @@ class VacationRequestController extends Controller
 
         // Verificar saldo
         $balance = VacationBalance::getOrCreateForUser($user->id, $year);
-        if (!$balance->hasEnoughBalance($validated['period_days'])) {
+        if (! $balance->hasEnoughBalance($validated['period_days'])) {
             return back()->withErrors([
-                'period_days' => 'Você não possui saldo suficiente de férias. Saldo disponível: ' . $balance->remaining_days . ' dias.',
+                'period_days' => 'Você não possui saldo suficiente de férias. Saldo disponível: '.$balance->remaining_days.' dias.',
             ]);
         }
 
@@ -83,7 +94,7 @@ class VacationRequestController extends Controller
         $concurrentCount = VacationRequest::hasOverlap($startDate, $endDate);
         if ($concurrentCount >= VacationRequest::MAX_CONCURRENT_VACATIONS) {
             return back()->withErrors([
-                'start_date' => 'Já existem ' . VacationRequest::MAX_CONCURRENT_VACATIONS . ' funcionários de férias neste período. Por favor, escolha outra data.',
+                'start_date' => 'Já existem '.VacationRequest::MAX_CONCURRENT_VACATIONS.' funcionários de férias neste período. Por favor, escolha outra data.',
             ]);
         }
 
@@ -137,7 +148,7 @@ class VacationRequestController extends Controller
         }
 
         // Verificar se pode ser cancelada
-        if (!$vacationRequest->canBeCancelled()) {
+        if (! $vacationRequest->canBeCancelled()) {
             return back()->withErrors([
                 'status' => 'Esta solicitação não pode ser cancelada.',
             ]);
@@ -172,31 +183,62 @@ class VacationRequestController extends Controller
      */
     public function approve(int $id)
     {
-        $vacationRequest = VacationRequest::findOrFail($id);
-        $user = auth()->user();
+        $result = DB::transaction(function () use ($id) {
+            $user = auth()->user();
 
-        if ($vacationRequest->status !== VacationRequest::STATUS_PENDING) {
+            // Serialize approvals so overlapping requests cannot pass the limit concurrently.
+            User::query()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $vacationRequest = VacationRequest::query()
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            if ($vacationRequest->status !== VacationRequest::STATUS_PENDING) {
+                return ['error' => 'status', 'message' => 'Esta solicitação já foi processada.'];
+            }
+
+            $balance = VacationBalance::getOrCreateForUser(
+                $vacationRequest->user_id,
+                $vacationRequest->year,
+            );
+            $balance = VacationBalance::query()
+                ->whereKey($balance->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $balance->hasEnoughBalance($vacationRequest->period_days)) {
+                return ['error' => 'balance', 'message' => 'O funcionário não possui saldo suficiente de férias.'];
+            }
+
+            if (VacationRequest::hasOverlap($vacationRequest->start_date, $vacationRequest->end_date, $vacationRequest->id)
+                >= VacationRequest::MAX_CONCURRENT_VACATIONS) {
+                return [
+                    'error' => 'start_date',
+                    'message' => 'O limite de funcionários de férias simultâneas foi atingido neste período.',
+                ];
+            }
+
+            if (! $balance->deductDays($vacationRequest->period_days)) {
+                return ['error' => 'balance', 'message' => 'O funcionário não possui saldo suficiente de férias.'];
+            }
+
+            $vacationRequest->update([
+                'status' => VacationRequest::STATUS_APPROVED,
+                'approved_by' => $user->id,
+                'approved_at' => now(),
+            ]);
+
+            return null;
+        });
+
+        if ($result !== null) {
             return back()->withErrors([
-                'status' => 'Esta solicitação já foi processada.',
+                $result['error'] => $result['message'],
             ]);
         }
-
-        // Verificar saldo antes de aprovar
-        $balance = VacationBalance::getOrCreateForUser($vacationRequest->user_id, $vacationRequest->year);
-        if (!$balance->hasEnoughBalance($vacationRequest->period_days)) {
-            return back()->withErrors([
-                'balance' => 'O funcionário não possui saldo suficiente de férias.',
-            ]);
-        }
-
-        // Aprovar e deduzir saldo
-        $vacationRequest->update([
-            'status' => VacationRequest::STATUS_APPROVED,
-            'approved_by' => $user->id,
-            'approved_at' => now(),
-        ]);
-
-        $balance->deductDays($vacationRequest->period_days);
 
         return back()->with('success', 'Solicitação aprovada com sucesso!');
     }
@@ -235,6 +277,7 @@ class VacationRequestController extends Controller
     private function getAvailableYears(): array
     {
         $currentYear = (int) date('Y');
+
         return range($currentYear - 2, $currentYear + 1);
     }
 }

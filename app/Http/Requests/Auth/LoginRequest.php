@@ -45,10 +45,10 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
-        $this->ensureIsNotRateLimited();
+        $errorField = $this->filled('username') ? 'username' : 'email';
+        $this->ensureIsNotRateLimited($errorField);
 
         $identifier = trim((string) ($this->input('username') ?? $this->input('email')));
-        $errorField = $this->filled('username') ? 'username' : 'email';
 
         if (config('ldap.enabled')) {
             if ($this->authenticateLocalAdministrator($identifier, $errorField)) {
@@ -173,7 +173,7 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function ensureIsNotRateLimited(): void
+    public function ensureIsNotRateLimited(string $errorField): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
@@ -184,7 +184,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            $errorField => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/dateFormat';
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     CalendarDays,
@@ -17,14 +18,6 @@ defineProps({
     isAdmin: Boolean,
 });
 
-const statusLabels = {
-    aberto: 'Aberto',
-    em_atendimento: 'Em atendimento',
-    resolvido: 'Resolvido',
-    aprovado: 'Aprovado',
-    recusado: 'Recusado',
-};
-
 const statusStyles = {
     aberto: 'bg-amber-50 text-amber-800 ring-amber-200',
     em_atendimento: 'bg-blue-50 text-blue-800 ring-blue-200',
@@ -40,21 +33,6 @@ const statusAccentStyles = {
     aprovado: 'bg-emerald-500',
     recusado: 'bg-red-500',
 };
-
-const categoryLabels = {
-    contrato: 'Contrato',
-    novo_processo: 'Novo processo',
-    novo_contrato: 'Novo processo',
-    aditivo: 'Aditivo',
-    compra_direta: 'Compra direta',
-    renovacao: 'Renovação',
-    documentacao: 'Documentação',
-    fiscalizacao: 'Fiscalização',
-    pagamento: 'Pagamento',
-    outro: 'Outro assunto',
-};
-
-const formatDate = (value) => new Date(value).toLocaleDateString('pt-BR');
 
 const deleteTicket = (ticket) => {
     if (
@@ -141,7 +119,7 @@ const deleteTicket = (ticket) => {
                                             'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset',
                                         ]"
                                     >
-                                        {{ statusLabels[ticket.status] }}
+                                        {{ ticketStatusLabels[ticket.status] }}
                                     </span>
                                 </div>
                                 <h2
@@ -155,7 +133,7 @@ const deleteTicket = (ticket) => {
                                     <span
                                         class="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
                                     >
-                                        {{ categoryLabels[ticket.category] }}
+                                        {{ ticketCategoryLabels[ticket.category] }}
                                     </span>
                                     <span
                                         class="inline-flex items-center gap-1.5"

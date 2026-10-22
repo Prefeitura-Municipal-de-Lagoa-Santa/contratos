@@ -47,6 +47,24 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('login throttle error is attached to the username field shown by the login form', function () {
+    $identifier = 'rate-limited-user';
+
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $this->post('/login', [
+            'username' => $identifier,
+            'password' => 'wrong-password',
+        ]);
+    }
+
+    $this->post('/login', [
+        'username' => $identifier,
+        'password' => 'wrong-password',
+    ])->assertSessionHasErrors('username');
+
+    expect(session('errors')->getBag('default')->has('email'))->toBeFalse();
+});
+
 test('users can authenticate using their LDAP username', function () {
     config(['ldap.enabled' => true]);
     $ldap = Mockery::mock(LdapAuthenticator::class);

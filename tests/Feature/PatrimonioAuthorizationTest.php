@@ -2,6 +2,7 @@
 
 use App\Models\Patrimonio;
 use App\Models\User;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('allows regular users to view the asset list but not manage assets', function () {
@@ -38,6 +39,16 @@ it('allows regular users to view the asset list but not manage assets', function
     $this->assertDatabaseMissing('patrimonios', [
         'numero_patrimonio' => 'PAT-002',
     ]);
+});
+
+it('does not register an asset detail route without a show action', function () {
+    $user = User::factory()->create(['role' => User::ROLE_MANAGER]);
+
+    $this->actingAs($user)
+        ->get('/patrimonios/1')
+        ->assertMethodNotAllowed();
+
+    expect(Route::has('patrimonios.show'))->toBeFalse();
 });
 
 it('allows managers and administrators to manage assets', function (string $role) {

@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/dateFormat';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import {
@@ -32,7 +33,7 @@ const endDate = computed(() => {
     if (!form.start_date) return '';
     const start = new Date(form.start_date);
     start.setDate(start.getDate() + form.period_days - 1);
-    return start.toLocaleDateString('pt-BR');
+    return formatDate(start);
 });
 
 const hasEnoughBalance = computed(() => {

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class VacationRequest extends Model
 {
@@ -35,8 +35,11 @@ class VacationRequest extends Model
      * Status possíveis
      */
     const STATUS_PENDING = 'pendente';
+
     const STATUS_APPROVED = 'aprovado';
+
     const STATUS_REJECTED = 'rejeitado';
+
     const STATUS_CANCELLED = 'cancelado';
 
     /**
@@ -175,7 +178,28 @@ class VacationRequest extends Model
             $query->where('id', '!=', $excludeId);
         }
 
-        return $query->count();
+        $events = [];
+
+        foreach ($query->get(['start_date', 'end_date']) as $vacation) {
+            $overlapStart = max($startDate->toDateString(), $vacation->start_date->toDateString());
+            $overlapEnd = min($endDate->toDateString(), $vacation->end_date->toDateString());
+            $dayAfterEnd = Carbon::parse($overlapEnd)->addDay()->toDateString();
+
+            $events[$overlapStart] = ($events[$overlapStart] ?? 0) + 1;
+            $events[$dayAfterEnd] = ($events[$dayAfterEnd] ?? 0) - 1;
+        }
+
+        ksort($events);
+
+        $concurrentCount = 0;
+        $maximumConcurrentCount = 0;
+
+        foreach ($events as $delta) {
+            $concurrentCount += $delta;
+            $maximumConcurrentCount = max($maximumConcurrentCount, $concurrentCount);
+        }
+
+        return $maximumConcurrentCount;
     }
 
     /**
