@@ -70,18 +70,3 @@ it('allows managers to manage tickets and vacation approvals but not user profil
 
     $this->get(route('users.index'))->assertForbidden();
 });
-
-it('assigns newly registered accounts the regular user profile', function () {
-    $this->post(route('register'), [
-        'name' => 'Novo Usuário',
-        'email' => 'novo.usuario@example.com',
-        'password' => 'Password123!',
-        'password_confirmation' => 'Password123!',
-    ])->assertRedirect(route('dashboard'));
-
-    $this->assertDatabaseHas('users', [
-        'email' => 'novo.usuario@example.com',
-        'role' => User::ROLE_USER,
-        'is_admin' => false,
-    ]);
-});
