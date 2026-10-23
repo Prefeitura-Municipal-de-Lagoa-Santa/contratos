@@ -71,7 +71,7 @@ class LdapAuthenticator
 
             $profile = $this->readProfile($entry, $normalizedUsername, $config);
 
-            if (! ldap_bind($connection, $userDn, $password)) {
+            if (! @ldap_bind($connection, $userDn, $password)) {
                 return null;
             }
 
