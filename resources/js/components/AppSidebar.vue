@@ -147,7 +147,7 @@ const mainNavItems = computed<NavItem[]>(() => {
 
         <SidebarFooter
             v-if="page.props.auth?.user"
-            class="sidebar-footer border-t border-gray-100 p-4"
+            class="sidebar-footer"
         >
             <NavUser />
         </SidebarFooter>
@@ -157,7 +157,7 @@ const mainNavItems = computed<NavItem[]>(() => {
 
 <style scoped>
 .sidebar-modern {
-    @apply border-r border-white/10 bg-slate-950 shadow-xl shadow-black/20 !important;
+    @apply border-r-0 bg-slate-950 shadow-xl shadow-black/20 !important;
 }
 
 .sidebar-modern :deep([data-sidebar='sidebar']) {
@@ -189,6 +189,6 @@ const mainNavItems = computed<NavItem[]>(() => {
 }
 
 .sidebar-footer {
-    @apply mt-auto border-t border-white/10 bg-slate-950 p-2 !important;
+    @apply mt-auto bg-slate-950 p-2 !important;
 }
 </style>
