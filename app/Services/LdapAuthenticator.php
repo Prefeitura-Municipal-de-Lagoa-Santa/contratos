@@ -13,11 +13,13 @@ class LdapAuthenticator
      */
     public function authenticate(string $username, string $password): ?array
     {
+        $config = config('ldap');
+        $this->validateTransport($config);
+
         if (! extension_loaded('ldap')) {
             throw new LdapUnavailableException('The PHP LDAP extension is not installed.');
         }
 
-        $config = config('ldap');
         if (empty($config['host']) || empty($config['base_dn'])) {
             throw new LdapUnavailableException('LDAP host and base DN must be configured.');
         }
@@ -78,6 +80,29 @@ class LdapAuthenticator
             return $profile;
         } finally {
             ldap_unbind($connection);
+        }
+    }
+
+    private function validateTransport(array $config): void
+    {
+        if (! $config['ssl'] && ! $config['tls']) {
+            throw new LdapUnavailableException('LDAP authentication requires SSL or StartTLS.');
+        }
+
+        if ($config['ssl'] && $config['tls']) {
+            throw new LdapUnavailableException('LDAP SSL and StartTLS cannot both be enabled.');
+        }
+
+        $host = $config['host'] ?? '';
+        if (! is_string($host) || ! preg_match('/^([a-z][a-z0-9+.-]*):\/\//i', $host, $matches)) {
+            return;
+        }
+
+        $scheme = strtolower($matches[1]);
+        $expectedScheme = $config['ssl'] ? 'ldaps' : 'ldap';
+
+        if (! in_array($scheme, ['ldap', 'ldaps'], true) || $scheme !== $expectedScheme) {
+            throw new LdapUnavailableException('LDAP URI scheme does not match the configured TLS mode.');
         }
     }
 
