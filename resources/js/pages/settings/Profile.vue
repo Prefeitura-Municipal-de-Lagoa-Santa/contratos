@@ -2,7 +2,7 @@
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { edit } from '@/routes/settings/profile';
 import { send } from '@/routes/verification';
-import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -16,10 +16,15 @@ import { type BreadcrumbItem } from '@/types';
 
 interface Props {
     mustVerifyEmail: boolean;
+    profile: {
+        name: string;
+        email: string;
+        email_verified_at: string | null;
+    };
     status?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
@@ -28,8 +33,6 @@ const breadcrumbItems: BreadcrumbItem[] = [
     },
 ];
 
-const page = usePage();
-const user = page.props.auth.user;
 </script>
 
 <template>
@@ -53,7 +56,7 @@ const user = page.props.auth.user;
                             id="name"
                             class="mt-1 block w-full"
                             name="name"
-                            :default-value="user.name"
+                            :default-value="props.profile.name"
                             required
                             autocomplete="name"
                             placeholder="Nome completo"
@@ -68,7 +71,7 @@ const user = page.props.auth.user;
                             type="email"
                             class="mt-1 block w-full"
                             name="email"
-                            :default-value="user.email"
+                            :default-value="props.profile.email"
                             required
                             autocomplete="username"
                             placeholder="Endereço de e-mail"
@@ -76,7 +79,7 @@ const user = page.props.auth.user;
                         <InputError class="mt-2" :message="errors.email" />
                     </div>
 
-                    <div v-if="mustVerifyEmail && !user.email_verified_at">
+                    <div v-if="mustVerifyEmail && !props.profile.email_verified_at">
                         <p class="-mt-4 text-sm text-muted-foreground">
                             Seu endereço de e-mail não está verificado.
                             <Link

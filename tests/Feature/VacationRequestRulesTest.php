@@ -5,6 +5,7 @@ use App\Models\VacationBalance;
 use App\Models\VacationRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function createVacationRequest(
     User $user,
@@ -34,6 +35,48 @@ function createVacationBalance(User $user, string $year, int $remainingDays = 30
         'remaining_days' => $remainingDays,
     ]);
 }
+
+it('returns only user summaries with vacation approvals', function () {
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $employee = User::factory()->create();
+    $request = createVacationRequest(
+        $employee,
+        now()->addDays(60)->toDateString(),
+        now()->addDays(74)->toDateString(),
+    );
+
+    $this->actingAs($manager)
+        ->get(route('ferias.approvals'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Ferias/Approvals')
+            ->where('pendingRequests.data.0.user.id', $employee->id)
+            ->where('pendingRequests.data.0.user.name', $employee->name)
+            ->missing('pendingRequests.data.0.user.email')
+            ->missing('pendingRequests.data.0.user.username')
+            ->missing('pendingRequests.data.0.user.role')
+            ->missing('pendingRequests.data.0.user.is_admin')
+            ->missing('auth.user.email')
+            ->missing('auth.user.username')
+            ->missing('auth.user.role')
+            ->missing('auth.user.is_admin'));
+
+    $this->actingAs($employee)
+        ->get(route('ferias.show', $request->id))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Ferias/Show')
+            ->where('vacationRequest.user.id', $employee->id)
+            ->where('vacationRequest.user.name', $employee->name)
+            ->missing('vacationRequest.user.email')
+            ->missing('vacationRequest.user.username')
+            ->missing('vacationRequest.user.role')
+            ->missing('vacationRequest.user.is_admin')
+            ->missing('vacationRequest.supervisor.email')
+            ->missing('vacationRequest.supervisor.username')
+            ->missing('vacationRequest.supervisor.role')
+            ->missing('vacationRequest.supervisor.is_admin'));
+});
 
 it('validates year filters before querying or creating balances', function () {
     $user = User::factory()->create();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserSummaryResource;
 use App\Models\User;
 use App\Models\VacationBalance;
 use App\Models\VacationRequest;
@@ -30,11 +31,12 @@ class VacationRequestController extends Controller
         ]);
         $year = (string) ($validated['year'] ?? date('Y'));
 
-        $vacationRequests = VacationRequest::with('approver')
+        $vacationRequests = VacationRequest::query()
             ->where('user_id', $user->id)
             ->byYear($year)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(10)
+            ->through(fn (VacationRequest $vacationRequest) => $vacationRequest->attributesToArray());
 
         $balance = VacationBalance::getOrCreateForUser($user->id, $year);
 
@@ -58,7 +60,8 @@ class VacationRequestController extends Controller
         return Inertia::render('Ferias/Create', [
             'balance' => $balance,
             // TODO: Filtrar apenas usuários elegíveis a serem chefia, se necessário
-            'users' => User::orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->orderBy('name')->get(['id', 'name'])
+                ->map(fn (User $user) => UserSummaryResource::make($user)->resolve()),
             'allowedPeriods' => VacationRequest::ALLOWED_PERIODS,
             'minimumAdvanceDays' => VacationRequest::MINIMUM_ADVANCE_DAYS,
             'minDate' => Carbon::today()->addDays(VacationRequest::MINIMUM_ADVANCE_DAYS)->format('Y-m-d'),
@@ -120,7 +123,11 @@ class VacationRequestController extends Controller
      */
     public function show(int $id)
     {
-        $vacationRequest = VacationRequest::with(['user', 'approver', 'supervisor'])
+        $vacationRequest = VacationRequest::with([
+            'user:id,name',
+            'approver:id,name',
+            'supervisor:id,name',
+        ])
             ->findOrFail($id);
 
         // Verificar se o usuário pode ver esta solicitação
@@ -130,7 +137,18 @@ class VacationRequestController extends Controller
         }
 
         return Inertia::render('Ferias/Show', [
-            'vacationRequest' => $vacationRequest,
+            'vacationRequest' => [
+                ...$vacationRequest->attributesToArray(),
+                'user' => $vacationRequest->user
+                    ? UserSummaryResource::make($vacationRequest->user)->resolve()
+                    : null,
+                'approver' => $vacationRequest->approver
+                    ? UserSummaryResource::make($vacationRequest->approver)->resolve()
+                    : null,
+                'supervisor' => $vacationRequest->supervisor
+                    ? UserSummaryResource::make($vacationRequest->supervisor)->resolve()
+                    : null,
+            ],
         ]);
     }
 
@@ -168,10 +186,14 @@ class VacationRequestController extends Controller
      */
     public function pendingApprovals()
     {
-        $pendingRequests = VacationRequest::with('user')
+        $pendingRequests = VacationRequest::with('user:id,name')
             ->pending()
             ->orderBy('start_date', 'asc')
-            ->paginate(10);
+            ->paginate(10)
+            ->through(fn (VacationRequest $vacationRequest) => [
+                ...$vacationRequest->attributesToArray(),
+                'user' => UserSummaryResource::make($vacationRequest->user)->resolve(),
+            ]);
 
         return Inertia::render('Ferias/Approvals', [
             'pendingRequests' => $pendingRequests,

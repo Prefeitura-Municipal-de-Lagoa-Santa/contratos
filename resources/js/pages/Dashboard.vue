@@ -41,7 +41,7 @@ const shortcuts = [
 ];
 
 const visibleShortcuts =
-    page.props.auth.user.role === 'user'
+    page.props.auth.isRegularUser
         ? shortcuts.filter((shortcut) => shortcut.availableToUser)
         : shortcuts;
 </script>
