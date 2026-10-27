@@ -6,12 +6,9 @@ import { computed } from 'vue';
 
 interface Props {
     user: User;
-    showEmail?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-    showEmail: false,
-});
+const props = defineProps<Props>();
 
 const { getInitials } = useInitials();
 
@@ -35,9 +32,6 @@ const showAvatar = computed(
             :title="user.name"
         >
             {{ user.name }}
-        </span>
-        <span v-if="showEmail" class="truncate text-xs text-slate-300">
-            {{ user.email }}
         </span>
     </div>
 </template>

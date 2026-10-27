@@ -29,7 +29,7 @@ const toggleTheme = () => {
 
 <template>
     <SidebarMenu>
-        <SidebarMenuItem class="flex items-center gap-1">
+        <SidebarMenuItem v-if="user" class="flex items-center gap-1">
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton

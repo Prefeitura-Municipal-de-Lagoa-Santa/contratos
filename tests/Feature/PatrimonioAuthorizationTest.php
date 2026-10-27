@@ -51,6 +51,32 @@ it('does not register an asset detail route without a show action', function () 
     expect(Route::has('patrimonios.show'))->toBeFalse();
 });
 
+it('returns only user summaries with assets', function () {
+    $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+    $employee = User::factory()->create();
+    Patrimonio::create([
+        'numero_patrimonio' => 'PAT-PRIVACY',
+        'nome' => 'Computador',
+        'user_id' => $employee->id,
+    ]);
+
+    $this->actingAs($manager)
+        ->get(route('patrimonios.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Patrimonio/Index')
+            ->where('patrimonios.data.0.user.id', $employee->id)
+            ->where('patrimonios.data.0.user.name', $employee->name)
+            ->missing('patrimonios.data.0.user.email')
+            ->missing('patrimonios.data.0.user.username')
+            ->missing('patrimonios.data.0.user.role')
+            ->missing('patrimonios.data.0.user.is_admin')
+            ->missing('auth.user.email')
+            ->missing('auth.user.username')
+            ->missing('auth.user.role')
+            ->missing('auth.user.is_admin'));
+});
+
 it('allows managers and administrators to manage assets', function (string $role) {
     $user = User::factory()->create(['role' => $role]);
     $patrimonio = Patrimonio::create([

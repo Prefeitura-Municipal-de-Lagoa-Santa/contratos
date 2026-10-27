@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserSummaryResource;
 use App\Models\ContractTicket;
 use App\Models\ContractTicketAttachment;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContractTicketController extends Controller
@@ -24,7 +25,14 @@ class ContractTicketController extends Controller
             ->when(! $user->canManageTickets(), fn ($query) => $query->where('user_id', $user->id))
             ->latest()
             ->paginate(10)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (ContractTicket $ticket) => [
+                ...$ticket->attributesToArray(),
+                'user' => UserSummaryResource::make($ticket->user)->resolve(),
+                'responsible' => $ticket->responsible
+                    ? UserSummaryResource::make($ticket->responsible)->resolve()
+                    : null,
+            ]);
 
         return Inertia::render('Chamados/Index', [
             'tickets' => $tickets,
@@ -164,15 +172,27 @@ class ContractTicketController extends Controller
     {
         abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
 
+        $ticket->load(['user:id,name', 'responsible:id,name', 'attachments']);
+
         return Inertia::render('Chamados/Show', [
-            'ticket' => $ticket->load(['user:id,name', 'responsible:id,name', 'attachments']),
+            'ticket' => [
+                ...$ticket->attributesToArray(),
+                'user' => UserSummaryResource::make($ticket->user)->resolve(),
+                'responsible' => $ticket->responsible
+                    ? UserSummaryResource::make($ticket->responsible)->resolve()
+                    : null,
+                'attachments' => $ticket->attachments->map(
+                    fn (ContractTicketAttachment $attachment) => $attachment->toArray(),
+                )->all(),
+            ],
             'canManage' => $request->user()->canManageTickets(),
             'isAdmin' => $request->user()->isAdministrator(),
             'statuses' => ContractTicket::MANAGEMENT_STATUSES,
             'responsibles' => User::query()
                 ->whereIn('role', [User::ROLE_ADMINISTRATOR, User::ROLE_MANAGER])
                 ->orderBy('name')
-                ->get(['id', 'name']),
+                ->get(['id', 'name'])
+                ->map(fn (User $user) => UserSummaryResource::make($user)->resolve()),
         ]);
     }
 

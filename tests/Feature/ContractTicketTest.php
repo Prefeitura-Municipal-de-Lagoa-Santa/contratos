@@ -39,7 +39,17 @@ it('allows an employee to create and view their own contract ticket', function (
         ->assertInertia(fn (Assert $page) => $page
             ->component('Chamados/Show')
             ->where('ticket.id', $ticket->id)
-            ->where('isAdmin', false));
+            ->where('isAdmin', false)
+            ->where('ticket.user.id', $employee->id)
+            ->where('ticket.user.name', $employee->name)
+            ->missing('ticket.user.email')
+            ->missing('ticket.user.username')
+            ->missing('ticket.user.role')
+            ->missing('ticket.user.is_admin')
+            ->missing('auth.user.email')
+            ->missing('auth.user.username')
+            ->missing('auth.user.role')
+            ->missing('auth.user.is_admin'));
 
     $this->get(route('chamados.pdf', $ticket))
         ->assertOk()
@@ -346,6 +356,7 @@ it('allows managers to view all tickets and download their attachments', functio
     $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
     $ticket = ContractTicket::create([
         'user_id' => $employee->id,
+        'responsible_user_id' => $manager->id,
         'subject' => 'Chamado visível para o gestor',
         'category' => 'documentacao',
         'description' => 'Descrição.',
@@ -364,9 +375,31 @@ it('allows managers to view all tickets and download their attachments', functio
         ->assertInertia(fn (Assert $page) => $page
             ->where('canManage', true)
             ->where('isAdmin', false)
-            ->has('tickets.data', 1));
+            ->has('tickets.data', 1)
+            ->where('tickets.data.0.user.id', $employee->id)
+            ->missing('tickets.data.0.user.email')
+            ->missing('tickets.data.0.user.username')
+            ->missing('tickets.data.0.user.role')
+            ->missing('tickets.data.0.user.is_admin')
+            ->where('tickets.data.0.responsible.id', $manager->id)
+            ->missing('tickets.data.0.responsible.email')
+            ->missing('tickets.data.0.responsible.username')
+            ->missing('tickets.data.0.responsible.role')
+            ->missing('tickets.data.0.responsible.is_admin'));
 
-    $this->get(route('chamados.show', $ticket))->assertOk();
+    $this->get(route('chamados.show', $ticket))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('ticket.responsible.id', $manager->id)
+            ->missing('ticket.responsible.email')
+            ->missing('ticket.responsible.username')
+            ->missing('ticket.responsible.role')
+            ->missing('ticket.responsible.is_admin')
+            ->where('responsibles.0.id', $manager->id)
+            ->missing('responsibles.0.email')
+            ->missing('responsibles.0.username')
+            ->missing('responsibles.0.role')
+            ->missing('responsibles.0.is_admin'));
     $this->get(route('chamados.attachments.download', $attachment))->assertOk();
 });
 

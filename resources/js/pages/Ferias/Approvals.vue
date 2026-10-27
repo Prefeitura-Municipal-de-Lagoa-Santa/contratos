@@ -102,7 +102,6 @@ const reject = () => {
                                             </div>
                                             <div>
                                                 <div class="font-medium text-gray-900">{{ request.user.name }}</div>
-                                                <div class="text-sm text-gray-500">{{ request.user.email }}</div>
                                             </div>
                                         </div>
                                     </td>

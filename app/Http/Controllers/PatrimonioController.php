@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserSummaryResource;
 use App\Models\Patrimonio;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ class PatrimonioController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Patrimonio::with('user');
+        $query = Patrimonio::with('user:id,name');
 
         if ($request->search) {
             $query->where(function ($q) use ($request) {
@@ -24,7 +25,13 @@ class PatrimonioController extends Controller
         }
 
         return Inertia::render('Patrimonio/Index', [
-            'patrimonios' => $query->latest()->paginate(10)->withQueryString(),
+            'patrimonios' => $query->latest()->paginate(10)->withQueryString()
+                ->through(fn (Patrimonio $patrimonio) => [
+                    ...$patrimonio->attributesToArray(),
+                    'user' => $patrimonio->user
+                        ? UserSummaryResource::make($patrimonio->user)->resolve()
+                        : null,
+                ]),
             'filters' => $request->only(['search']),
             'canManage' => $request->user()->canManageTickets(),
         ]);
@@ -33,7 +40,8 @@ class PatrimonioController extends Controller
     public function create()
     {
         return Inertia::render('Patrimonio/Create', [
-            'users' => User::select('id', 'name')->get(),
+            'users' => User::query()->get(['id', 'name'])
+                ->map(fn (User $user) => UserSummaryResource::make($user)->resolve()),
         ]);
     }
 
@@ -56,15 +64,16 @@ class PatrimonioController extends Controller
     public function edit(Patrimonio $patrimonio)
     {
         return Inertia::render('Patrimonio/Edit', [
-            'patrimonio' => $patrimonio->load('user'),
-            'users' => User::select('id', 'name')->get(),
+            'patrimonio' => $patrimonio->attributesToArray(),
+            'users' => User::query()->get(['id', 'name'])
+                ->map(fn (User $user) => UserSummaryResource::make($user)->resolve()),
         ]);
     }
 
     public function update(Request $request, Patrimonio $patrimonio)
     {
         $validated = $request->validate([
-            'numero_patrimonio' => 'required|string|unique:patrimonios,numero_patrimonio,' . $patrimonio->id,
+            'numero_patrimonio' => 'required|string|unique:patrimonios,numero_patrimonio,'.$patrimonio->id,
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',

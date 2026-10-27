@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class AdminUserSeeder extends Seeder
 {
@@ -13,18 +14,26 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@contratos.com'],
-            [
-                'name' => 'Administrador',
-                'password' => Hash::make('password'),
-                'role' => User::ROLE_ADMINISTRATOR,
-                'email_verified_at' => now(),
-            ]
-        );
+        $email = 'admin@contratos.com';
 
-        $this->command->info('Usuário administrador criado/atualizado com sucesso!');
-        $this->command->info('Email: admin@contratos.com');
-        $this->command->info('Senha: password');
+        if (User::query()->where('email', $email)->exists()) {
+            return;
+        }
+
+        $password = config('admin.initial_password');
+
+        if (! is_string($password) || Str::length($password) < 32) {
+            throw new RuntimeException(
+                'ADMIN_INITIAL_PASSWORD must be configured with at least 32 characters before creating the initial administrator.'
+            );
+        }
+
+        User::query()->create([
+            'name' => 'Administrador',
+            'email' => $email,
+            'password' => $password,
+            'role' => User::ROLE_ADMINISTRATOR,
+            'email_verified_at' => now(),
+        ]);
     }
 }

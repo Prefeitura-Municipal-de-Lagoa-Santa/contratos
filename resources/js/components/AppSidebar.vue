@@ -28,10 +28,8 @@ import {
 import { computed } from 'vue';
 
 const page = usePage();
-const isAdmin = computed(() => page.props.auth?.user?.role === 'administrator');
-const canManage = computed(() =>
-    ['administrator', 'manager'].includes(page.props.auth?.user?.role ?? ''),
-);
+const isAdmin = computed(() => page.props.auth?.isAdministrator ?? false);
+const canManage = computed(() => page.props.auth?.canManageTickets ?? false);
 
 const mainNavItems = computed<NavItem[]>(() => {
     const rhItems: NavItem[] = [
