@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Exceptions\LdapUnavailableException;
 use App\Services\LdapAuthenticator;
 
 test('login screen can be rendered', function () {
@@ -90,6 +91,30 @@ test('users can authenticate using their LDAP username', function () {
         'email' => 'leonardo@example.test',
         'role' => User::ROLE_USER,
     ]);
+});
+
+test('LDAP transport requires encryption unless insecure mode is explicitly enabled', function () {
+    config([
+        'ldap.ssl' => false,
+        'ldap.tls' => false,
+        'ldap.allow_insecure' => false,
+    ]);
+
+    expect(fn () => app(LdapAuthenticator::class)->authenticate('user', 'password'))
+        ->toThrow(LdapUnavailableException::class, 'requires SSL or StartTLS');
+});
+
+test('LDAP can use plaintext transport when explicitly allowed', function () {
+    config([
+        'ldap.ssl' => false,
+        'ldap.tls' => false,
+        'ldap.allow_insecure' => true,
+        'ldap.host' => null,
+        'ldap.base_dn' => null,
+    ]);
+
+    expect(fn () => app(LdapAuthenticator::class)->authenticate('user', 'password'))
+        ->toThrow(LdapUnavailableException::class, 'LDAP host and base DN must be configured.');
 });
 
 test('LDAP login does not fall back to a local password when directory authentication fails', function () {
