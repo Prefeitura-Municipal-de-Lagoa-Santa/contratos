@@ -85,8 +85,10 @@ class LdapAuthenticator
 
     private function validateTransport(array $config): void
     {
-        if (! $config['ssl'] && ! $config['tls']) {
-            throw new LdapUnavailableException('LDAP authentication requires SSL or StartTLS.');
+        if (! $config['ssl'] && ! $config['tls'] && ! $config['allow_insecure']) {
+            throw new LdapUnavailableException(
+                'LDAP authentication requires SSL or StartTLS unless insecure LDAP is explicitly allowed.'
+            );
         }
 
         if ($config['ssl'] && $config['tls']) {

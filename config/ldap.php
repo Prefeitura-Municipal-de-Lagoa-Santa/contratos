@@ -9,6 +9,7 @@ return [
     'bind_password' => env('LDAP_PASSWORD'),
     'ssl' => (bool) env('LDAP_SSL', false),
     'tls' => (bool) env('LDAP_TLS', false),
+    'allow_insecure' => (bool) env('LDAP_ALLOW_INSECURE', false),
     'timeout' => (int) env('LDAP_TIMEOUT', 5),
     'login_attributes' => array_filter(array_map(
         'trim',
