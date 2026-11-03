@@ -10,6 +10,7 @@ return [
     'ssl' => (bool) env('LDAP_SSL', false),
     'tls' => (bool) env('LDAP_TLS', false),
     'ca_cert_file' => env('LDAP_TLS_CA_CERT'),
+    'allow_insecure' => (bool) env('LDAP_ALLOW_INSECURE', false),
     'timeout' => (int) env('LDAP_TIMEOUT', 5),
     'login_attributes' => array_filter(array_map(
         'trim',
