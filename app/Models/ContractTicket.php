@@ -14,6 +14,11 @@ class ContractTicket extends Model
         'renovacao',
     ];
 
+    public const DEMANDANTES = [
+        'Coordenação de infraestrutura em TIC',
+        'Coordenação de Desenvolvimento de Sistemas e Aplicações',
+    ];
+
     public const STATUSES = [
         'aberto',
         'em_atendimento',

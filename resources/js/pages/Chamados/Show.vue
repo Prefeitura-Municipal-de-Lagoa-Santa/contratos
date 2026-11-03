@@ -91,7 +91,7 @@ const decide = (status: string) =>
         <div
             class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8"
         >
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 <Link
                     href="/chamados"
                     class="mb-5 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -133,7 +133,7 @@ const decide = (status: string) =>
                 </div>
 
                 <section
-                    class="space-y-6 rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-100 sm:p-8"
+                    class="space-y-4 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-100 sm:p-6"
                 >
                     <div class="flex flex-wrap items-center gap-3">
                         <span
@@ -180,14 +180,16 @@ const decide = (status: string) =>
                     </div>
 
                     <div
-                        class="border-b border-gray-100 pb-5 text-sm text-gray-500"
+                        class="flex flex-wrap gap-x-8 gap-y-1 border-b border-gray-100 pb-4 text-sm text-gray-500"
                     >
-                        Aberto por
-                        <span class="font-medium text-gray-700">{{
-                            ticket.user.name
-                        }}</span>
-                        em {{ formatDateTime(ticket.created_at) }}
-                        <p class="mt-1">
+                        <p>
+                            Aberto por
+                            <span class="font-medium text-gray-700">{{
+                                ticket.user.name
+                            }}</span>
+                            em {{ formatDateTime(ticket.created_at) }}
+                        </p>
+                        <p>
                             Responsável:
                             <span class="font-medium text-gray-700">{{
                                 ticket.responsible?.name ?? 'Não definido'
@@ -197,53 +199,43 @@ const decide = (status: string) =>
 
                     <div
                         v-if="ticket.category === 'novo_processo'"
-                        class="grid gap-5 border-b border-gray-100 pb-5 sm:grid-cols-2"
+                        class="grid gap-3 border-b border-gray-100 pb-4 sm:grid-cols-2 lg:grid-cols-4"
                     >
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Demandante
                             </h2>
                             <p class="whitespace-pre-wrap text-gray-800">
                                 {{ ticket.demandante }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Demandado
                             </h2>
                             <p class="whitespace-pre-wrap text-gray-800">
                                 {{ ticket.demandado }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Responsável
                             </h2>
                             <p class="whitespace-pre-wrap text-gray-800">
                                 {{ ticket.responsavel }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Matrícula
                             </h2>
                             <p class="whitespace-pre-wrap text-gray-800">
                                 {{ ticket.matricula || 'Não cadastrada' }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
-                                Valor
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
+                                Valor total
                             </h2>
                             <p class="text-gray-800">
                                 {{
@@ -256,10 +248,8 @@ const decide = (status: string) =>
                                 }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Data
                             </h2>
                             <p class="text-gray-800">
@@ -274,10 +264,8 @@ const decide = (status: string) =>
                                 }}
                             </p>
                         </div>
-                        <div>
-                            <h2
-                                class="mb-2 text-sm font-semibold text-gray-700"
-                            >
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <h2 class="mb-1 text-xs font-medium text-gray-500">
                                 Duração do contrato
                             </h2>
                             <p class="whitespace-pre-wrap text-gray-800">
@@ -286,110 +274,165 @@ const decide = (status: string) =>
                         </div>
                     </div>
 
-                    <div>
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            {{
-                                ticket.category === 'novo_processo'
-                                    ? 'Problema Identificado'
-                                    : 'Descrição'
-                            }}
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.description }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.solucao_sugerida">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Solução sugerida
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.solucao_sugerida }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.specifications">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Especificações do objeto
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.specifications }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.justification">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Justificativa
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.justification }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.quantity !== null">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Quantidade
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.quantity
-                            }}<span v-if="ticket.unit"> {{ ticket.unit }}</span>
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.ficha">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Ficha
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.ficha }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.dotacao">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Dotação
-                        </h2>
-                        <p class="whitespace-pre-wrap text-gray-800">
-                            {{ ticket.dotacao }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.in_pca !== null">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Prevista no PCA
-                        </h2>
-                        <p class="text-gray-800">
-                            {{ ticket.in_pca ? 'Sim' : 'Não' }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.involves_other_secretariats !== null">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Envolve outras secretarias
-                        </h2>
-                        <p class="text-gray-800">
-                            {{
-                                ticket.involves_other_secretariats
-                                    ? 'Sim'
-                                    : 'Não'
-                            }}
-                        </p>
-                    </div>
-
-                    <div v-if="ticket.other_fichas?.length">
-                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Fichas de outras secretarias
-                        </h2>
-                        <ul
-                            class="list-inside list-disc space-y-1 text-gray-800"
-                        >
-                            <li
-                                v-for="(ficha, index) in ticket.other_fichas"
-                                :key="index"
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="rounded-xl border border-gray-100 p-4">
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
                             >
-                                {{ ficha }}
-                            </li>
-                        </ul>
+                                {{
+                                    ticket.category === 'novo_processo'
+                                        ? 'Problema Identificado'
+                                        : 'Descrição'
+                                }}
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.description }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.solucao_sugerida"
+                            class="rounded-xl border border-gray-100 p-4"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Solução sugerida
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.solucao_sugerida }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.specifications"
+                            class="rounded-xl border border-gray-100 p-4"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Especificações do objeto
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.specifications }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.justification"
+                            class="rounded-xl border border-gray-100 p-4"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Justificativa
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.justification }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div
+                            v-if="ticket.quantity !== null"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Quantidade
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.quantity
+                                }}<span v-if="ticket.unit">
+                                    {{ ticket.unit }}</span
+                                >
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.ficha"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Ficha
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.ficha }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.dotacao"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Dotação
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.dotacao }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.in_pca !== null"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Prevista no PCA
+                            </h2>
+                            <p class="text-gray-800">
+                                {{ ticket.in_pca ? 'Sim' : 'Não' }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.involves_other_secretariats !== null"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Envolve outras secretarias
+                            </h2>
+                            <p class="text-gray-800">
+                                {{
+                                    ticket.involves_other_secretariats
+                                        ? 'Sim'
+                                        : 'Não'
+                                }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.other_fichas?.length"
+                            class="rounded-xl bg-slate-50 p-3"
+                        >
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Fichas de outras secretarias
+                            </h2>
+                            <ul
+                                class="list-inside list-disc space-y-1 text-gray-800"
+                            >
+                                <li
+                                    v-for="(
+                                        ficha, index
+                                    ) in ticket.other_fichas"
+                                    :key="index"
+                                >
+                                    {{ ficha }}
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div v-if="ticket.attachments.length">
@@ -433,7 +476,7 @@ const decide = (status: string) =>
                     </div>
 
                     <section
-                        class="space-y-5 border-t border-gray-100 pt-6"
+                        class="space-y-4 border-t border-gray-100 pt-4"
                         aria-labelledby="conversation-heading"
                     >
                         <div>
@@ -451,14 +494,14 @@ const decide = (status: string) =>
 
                         <div
                             v-if="ticket.messages.length"
-                            class="space-y-4"
+                            class="max-h-[28rem] space-y-3 overflow-y-auto pr-2"
                             aria-live="polite"
                         >
                             <article
                                 v-for="message in ticket.messages"
                                 :key="message.id"
                                 :class="[
-                                    'rounded-xl border p-4',
+                                    'rounded-xl border p-3',
                                     message.author.is_manager
                                         ? 'border-indigo-100 bg-indigo-50/70'
                                         : 'border-slate-200 bg-slate-50',
@@ -522,7 +565,7 @@ const decide = (status: string) =>
                                 <textarea
                                     id="conversation-message"
                                     v-model="messageForm.message"
-                                    rows="4"
+                                    rows="3"
                                     maxlength="5000"
                                     required
                                     placeholder="Digite sua mensagem para o atendimento."
@@ -557,9 +600,11 @@ const decide = (status: string) =>
                     <form
                         v-if="canManage && !isFinalDecision"
                         @submit.prevent="submit"
-                        class="space-y-5 border-t border-gray-100 pt-6"
+                        class="grid gap-4 border-t border-gray-100 pt-4 md:grid-cols-2"
                     >
-                        <h2 class="text-base font-semibold text-gray-900">
+                        <h2
+                            class="text-base font-semibold text-gray-900 md:col-span-2"
+                        >
                             Atendimento da Demanda
                         </h2>
                         <div>
@@ -616,7 +661,7 @@ const decide = (status: string) =>
                                 {{ form.errors.responsible_user_id }}
                             </p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right md:col-span-2">
                             <button
                                 type="submit"
                                 :disabled="form.processing"
