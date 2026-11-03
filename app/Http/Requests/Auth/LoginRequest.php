@@ -115,6 +115,7 @@ class LoginRequest extends FormRequest
             );
         } catch (LdapUnavailableException $exception) {
             Log::error('LDAP authentication service is unavailable.', [
+                'message' => $exception->getMessage(),
                 'error_code' => $exception->getCode(),
             ]);
 

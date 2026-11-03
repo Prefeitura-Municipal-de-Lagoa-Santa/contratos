@@ -24,6 +24,8 @@ class LdapAuthenticator
             throw new LdapUnavailableException('LDAP host and base DN must be configured.');
         }
 
+        $this->configureCaCertificate($config['ca_cert_file'] ?? null);
+
         $host = $config['host'];
         if (! preg_match('/^[a-z][a-z0-9+.-]*:\/\//i', $host)) {
             $host = ($config['ssl'] ? 'ldaps://' : 'ldap://').$host.':'.$config['port'];
@@ -128,13 +130,33 @@ class LdapAuthenticator
         }
     }
 
+    private function configureCaCertificate(mixed $caCertificateFile): void
+    {
+        if ($caCertificateFile === null || $caCertificateFile === '') {
+            return;
+        }
+
+        if (
+            ! is_string($caCertificateFile)
+            || ! defined('LDAP_OPT_X_TLS_CACERTFILE')
+            || ! is_file($caCertificateFile)
+            || ! is_readable($caCertificateFile)
+        ) {
+            throw new LdapUnavailableException('The configured LDAP CA certificate file is not readable.');
+        }
+
+        if (! ldap_set_option(null, LDAP_OPT_X_TLS_CACERTFILE, $caCertificateFile)) {
+            throw new LdapUnavailableException('Could not configure the LDAP CA certificate file.');
+        }
+    }
+
     private function bindServiceAccount($connection, array $config): void
     {
         $bindUsername = $config['bind_username'];
         $bindPassword = $config['bind_password'];
         $bound = $bindUsername
-            ? ldap_bind($connection, $bindUsername, $bindPassword ?? '')
-            : ldap_bind($connection);
+            ? @ldap_bind($connection, $bindUsername, $bindPassword ?? '')
+            : @ldap_bind($connection);
 
         if (! $bound) {
             throw new LdapUnavailableException('LDAP service account bind failed.', ldap_errno($connection));

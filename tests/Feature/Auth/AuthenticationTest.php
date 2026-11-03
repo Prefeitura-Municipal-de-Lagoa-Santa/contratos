@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Exceptions\LdapUnavailableException;
+use App\Models\User;
 use App\Services\LdapAuthenticator;
 
 test('login screen can be rendered', function () {
@@ -131,6 +131,23 @@ test('LDAP login does not fall back to a local password when directory authentic
         'username' => 'leonardo',
         'password' => 'local-password',
     ])->assertSessionHasErrors('username');
+
+    $this->assertGuest();
+});
+
+test('LDAP service outages are returned as login errors instead of server errors', function () {
+    config(['ldap.enabled' => true]);
+    $ldap = Mockery::mock(LdapAuthenticator::class);
+    $ldap->shouldReceive('authenticate')
+        ->once()
+        ->andThrow(new LdapUnavailableException('LDAP service account bind failed.', 81));
+    $this->instance(LdapAuthenticator::class, $ldap);
+
+    $this->post('/login', [
+        'username' => 'leonardoleite',
+        'password' => 'network-password',
+    ])->assertStatus(302)
+        ->assertSessionHasErrors('username');
 
     $this->assertGuest();
 });
