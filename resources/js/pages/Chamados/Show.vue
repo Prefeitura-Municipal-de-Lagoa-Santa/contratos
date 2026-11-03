@@ -16,24 +16,67 @@ import {
     X,
 } from 'lucide-vue-next';
 
-const props = defineProps({
-    ticket: Object,
-    canManage: Boolean,
-    isAdmin: Boolean,
-    statuses: Array,
-    responsibles: Array,
-});
+type Ticket = {
+    id: number;
+    subject: string;
+    category: string;
+    status: string;
+    management_response: string | null;
+    responsible_user_id: number | null;
+    user: { name: string };
+    responsible: { name: string } | null;
+    created_at: string;
+    demandante: string | null;
+    demandado: string | null;
+    responsavel: string | null;
+    matricula: string | null;
+    valor_estimado: string | null;
+    data_demanda: string | null;
+    duracao_contrato: string | null;
+    description: string;
+    solucao_sugerida: string | null;
+    specifications: string | null;
+    justification: string | null;
+    quantity: number | null;
+    unit: string | null;
+    ficha: string | null;
+    dotacao: string | null;
+    in_pca: boolean | null;
+    involves_other_secretariats: boolean | null;
+    other_fichas: string[] | null;
+    attachments: { id: number; original_name: string }[];
+    messages: {
+        id: number;
+        message: string;
+        created_at: string;
+        author: { id: number; name: string; is_manager: boolean };
+    }[];
+};
+
+const props = defineProps<{
+    ticket: Ticket;
+    canManage: boolean;
+    isAdmin: boolean;
+    statuses: string[];
+    responsibles: { id: number; name: string }[];
+}>();
 
 const form = useForm({
     status: props.ticket.status,
     management_response: props.ticket.management_response ?? '',
     responsible_user_id: props.ticket.responsible_user_id ?? '',
 });
+const messageForm = useForm({ message: '' });
 
 const isFinalDecision = ['aprovado', 'recusado'].includes(props.ticket.status);
 const decisionForm = useForm({ status: '' });
 const submit = () => form.patch(`/chamados/${props.ticket.id}`);
-const decide = (status) =>
+const sendMessage = () =>
+    messageForm.post(`/chamados/${props.ticket.id}/mensagens`, {
+        preserveScroll: true,
+        onSuccess: () => messageForm.reset('message'),
+    });
+const decide = (status: string) =>
     decisionForm
         .transform(() => ({ status }))
         .patch(`/chamados/${props.ticket.id}/decisao`, {
@@ -81,7 +124,11 @@ const decide = (status) =>
                         class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
                     >
                         <FileDown class="h-4 w-4" />
-                        Exportar para PDF
+                        {{
+                            ticket.category === 'novo_processo'
+                                ? 'Gerar DFD em PDF'
+                                : 'Exportar para PDF'
+                        }}
                     </a>
                 </div>
 
@@ -148,12 +195,116 @@ const decide = (status) =>
                         </p>
                     </div>
 
+                    <div
+                        v-if="ticket.category === 'novo_processo'"
+                        class="grid gap-5 border-b border-gray-100 pb-5 sm:grid-cols-2"
+                    >
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Demandante
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.demandante }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Demandado
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.demandado }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Responsável
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.responsavel }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Matrícula
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.matricula || 'Não cadastrada' }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Valor
+                            </h2>
+                            <p class="text-gray-800">
+                                {{
+                                    Number(
+                                        ticket.valor_estimado,
+                                    ).toLocaleString('pt-BR', {
+                                        style: 'currency',
+                                        currency: 'BRL',
+                                    })
+                                }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Data
+                            </h2>
+                            <p class="text-gray-800">
+                                {{
+                                    ticket.data_demanda
+                                        ? ticket.data_demanda
+                                              .slice(0, 10)
+                                              .split('-')
+                                              .reverse()
+                                              .join('/')
+                                        : ''
+                                }}
+                            </p>
+                        </div>
+                        <div>
+                            <h2
+                                class="mb-2 text-sm font-semibold text-gray-700"
+                            >
+                                Duração do contrato
+                            </h2>
+                            <p class="whitespace-pre-wrap text-gray-800">
+                                {{ ticket.duracao_contrato }}
+                            </p>
+                        </div>
+                    </div>
+
                     <div>
                         <h2 class="mb-2 text-sm font-semibold text-gray-700">
-                            Descrição
+                            {{
+                                ticket.category === 'novo_processo'
+                                    ? 'Problema Identificado'
+                                    : 'Descrição'
+                            }}
                         </h2>
                         <p class="whitespace-pre-wrap text-gray-800">
                             {{ ticket.description }}
+                        </p>
+                    </div>
+
+                    <div v-if="ticket.solucao_sugerida">
+                        <h2 class="mb-2 text-sm font-semibold text-gray-700">
+                            Solução sugerida
+                        </h2>
+                        <p class="whitespace-pre-wrap text-gray-800">
+                            {{ ticket.solucao_sugerida }}
                         </p>
                     </div>
 
@@ -274,12 +425,134 @@ const decide = (status) =>
                         class="rounded-xl border border-emerald-200 bg-emerald-50 p-5"
                     >
                         <h2 class="mb-2 text-sm font-semibold text-emerald-900">
-                            Resposta da Gestão de Contratos
+                            Resposta anterior da Gestão de Contratos
                         </h2>
                         <p class="whitespace-pre-wrap text-emerald-950">
                             {{ ticket.management_response }}
                         </p>
                     </div>
+
+                    <section
+                        class="space-y-5 border-t border-gray-100 pt-6"
+                        aria-labelledby="conversation-heading"
+                    >
+                        <div>
+                            <h2
+                                id="conversation-heading"
+                                class="text-base font-semibold text-gray-900"
+                            >
+                                Conversa do atendimento
+                            </h2>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Envie mensagens para conversar com o usuário ou
+                                com a Gestão de Contratos.
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="ticket.messages.length"
+                            class="space-y-4"
+                            aria-live="polite"
+                        >
+                            <article
+                                v-for="message in ticket.messages"
+                                :key="message.id"
+                                :class="[
+                                    'rounded-xl border p-4',
+                                    message.author.is_manager
+                                        ? 'border-indigo-100 bg-indigo-50/70'
+                                        : 'border-slate-200 bg-slate-50',
+                                ]"
+                            >
+                                <header
+                                    class="mb-2 flex flex-wrap items-center justify-between gap-2"
+                                >
+                                    <div
+                                        class="flex items-center gap-2 text-sm"
+                                    >
+                                        <span
+                                            class="font-semibold text-gray-900"
+                                        >
+                                            {{ message.author.name }}
+                                        </span>
+                                        <span
+                                            :class="[
+                                                'rounded-full px-2 py-0.5 text-xs font-medium',
+                                                message.author.is_manager
+                                                    ? 'bg-indigo-100 text-indigo-700'
+                                                    : 'bg-slate-200 text-slate-700',
+                                            ]"
+                                        >
+                                            {{
+                                                message.author.is_manager
+                                                    ? 'Gestão'
+                                                    : 'Solicitante'
+                                            }}
+                                        </span>
+                                    </div>
+                                    <time
+                                        :datetime="message.created_at"
+                                        class="text-xs text-gray-500"
+                                    >
+                                        {{ formatDateTime(message.created_at) }}
+                                    </time>
+                                </header>
+                                <p
+                                    class="whitespace-pre-wrap break-words text-sm text-gray-800"
+                                >
+                                    {{ message.message }}
+                                </p>
+                            </article>
+                        </div>
+                        <p
+                            v-else
+                            class="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500"
+                        >
+                            Ainda não há mensagens nesta conversa.
+                        </p>
+
+                        <form @submit.prevent="sendMessage" class="space-y-3">
+                            <div>
+                                <label
+                                    for="conversation-message"
+                                    class="mb-2 block text-sm font-medium text-gray-700"
+                                >
+                                    Escreva uma mensagem
+                                </label>
+                                <textarea
+                                    id="conversation-message"
+                                    v-model="messageForm.message"
+                                    rows="4"
+                                    maxlength="5000"
+                                    required
+                                    placeholder="Digite sua mensagem para o atendimento."
+                                    class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                                <p
+                                    v-if="messageForm.errors.message"
+                                    class="mt-1 text-sm text-red-600"
+                                >
+                                    {{ messageForm.errors.message }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <button
+                                    type="submit"
+                                    :disabled="
+                                        messageForm.processing ||
+                                        !messageForm.message.trim()
+                                    "
+                                    class="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {{
+                                        messageForm.processing
+                                            ? 'Enviando...'
+                                            : 'Enviar mensagem'
+                                    }}
+                                </button>
+                            </div>
+                        </form>
+                    </section>
 
                     <form
                         v-if="canManage && !isFinalDecision"
@@ -341,27 +614,6 @@ const decide = (status) =>
                                 class="mt-1 text-sm text-red-600"
                             >
                                 {{ form.errors.responsible_user_id }}
-                            </p>
-                        </div>
-                        <div>
-                            <label
-                                for="management_response"
-                                class="mb-2 block text-sm font-medium text-gray-700"
-                                >Resposta ao servidor</label
-                            >
-                            <textarea
-                                id="management_response"
-                                v-model="form.management_response"
-                                rows="5"
-                                maxlength="10000"
-                                placeholder="Escreva uma resposta ou orientação para o servidor."
-                                class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                            <p
-                                v-if="form.errors.management_response"
-                                class="mt-1 text-sm text-red-600"
-                            >
-                                {{ form.errors.management_response }}
                             </p>
                         </div>
                         <div class="text-right">

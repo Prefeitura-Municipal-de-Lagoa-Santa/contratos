@@ -41,10 +41,15 @@ class ContractTicketController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Chamados/Create', [
             'categories' => ContractTicket::CATEGORIES,
+            'currentUser' => [
+                'name' => $request->user()->name,
+                'username' => $request->user()->username,
+            ],
+            'today' => now()->toDateString(),
         ]);
     }
 
@@ -55,11 +60,25 @@ class ContractTicketController extends Controller
             ['novo_processo', 'compra_direta'],
             true,
         );
+        $isNewProcess = $request->input('category') === 'novo_processo';
 
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
+            'demandante' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:255'],
+            'demandado' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:255'],
+            'solucao_sugerida' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:10000'],
+            'valor_estimado' => [
+                Rule::requiredIf($isNewProcess),
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:9999999999999.99',
+                'decimal:0,2',
+            ],
+            'data_demanda' => [Rule::requiredIf($isNewProcess), 'nullable', 'date'],
+            'duracao_contrato' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:100'],
             'specifications' => [
                 Rule::requiredIf($requiresContractDetails),
                 'nullable',
@@ -103,7 +122,13 @@ class ContractTicketController extends Controller
                 'min:1',
             ],
             'other_fichas.*' => ['required', 'string', 'max:100', 'regex:/^[0-9]+$/'],
-            'attachments' => ['required', 'array', 'min:1', 'max:5'],
+            'attachments' => [
+                Rule::requiredIf(! $isNewProcess),
+                'nullable',
+                'array',
+                'min:1',
+                'max:5',
+            ],
             'attachments.*' => ['required', 'file', 'max:10240', 'mimes:pdf', 'extensions:pdf'],
         ], [
             'in_pca.in' => 'Não é possível prosseguir com a demanda, pois ela não está prevista no PCA.',
@@ -117,6 +142,14 @@ class ContractTicketController extends Controller
             'subject' => $validated['subject'],
             'category' => $validated['category'],
             'description' => $validated['description'],
+            'demandante' => $isNewProcess ? $validated['demandante'] : null,
+            'responsavel' => $isNewProcess ? $request->user()->name : null,
+            'matricula' => $isNewProcess ? $request->user()->username : null,
+            'demandado' => $isNewProcess ? $validated['demandado'] : null,
+            'solucao_sugerida' => $isNewProcess ? $validated['solucao_sugerida'] : null,
+            'valor_estimado' => $isNewProcess ? $validated['valor_estimado'] : null,
+            'data_demanda' => $isNewProcess ? $validated['data_demanda'] : null,
+            'duracao_contrato' => $isNewProcess ? $validated['duracao_contrato'] : null,
             'specifications' => $requiresContractDetails
                 ? $validated['specifications']
                 : null,
@@ -172,7 +205,12 @@ class ContractTicketController extends Controller
     {
         abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
 
-        $ticket->load(['user:id,name', 'responsible:id,name', 'attachments']);
+        $ticket->load([
+            'user:id,name',
+            'responsible:id,name',
+            'attachments',
+            'messages.user:id,name,role',
+        ]);
 
         return Inertia::render('Chamados/Show', [
             'ticket' => [
@@ -184,6 +222,16 @@ class ContractTicketController extends Controller
                 'attachments' => $ticket->attachments->map(
                     fn (ContractTicketAttachment $attachment) => $attachment->toArray(),
                 )->all(),
+                'messages' => $ticket->messages->map(fn ($message) => [
+                    'id' => $message->id,
+                    'message' => $message->message,
+                    'created_at' => $message->created_at->toISOString(),
+                    'author' => [
+                        'id' => $message->user->id,
+                        'name' => $message->user->name,
+                        'is_manager' => $message->user->canManageTickets(),
+                    ],
+                ])->all(),
             ],
             'canManage' => $request->user()->canManageTickets(),
             'isAdmin' => $request->user()->isAdministrator(),
@@ -196,11 +244,27 @@ class ContractTicketController extends Controller
         ]);
     }
 
+    public function storeMessage(Request $request, ContractTicket $ticket): RedirectResponse
+    {
+        abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $ticket->messages()->create([
+            'user_id' => $request->user()->id,
+            'message' => $validated['message'],
+        ]);
+
+        return back()->with('success', 'Mensagem enviada com sucesso.');
+    }
+
     public function exportPdf(Request $request, ContractTicket $ticket)
     {
         abort_unless($request->user()->canManageTickets() || $ticket->user_id === $request->user()->id, 403);
 
-        $ticket->load(['user:id,name', 'responsible:id,name']);
+        $ticket->load(['user:id,name,username', 'responsible:id,name']);
 
         return Pdf::loadView('pdf.contract-ticket', [
             'ticket' => $ticket,

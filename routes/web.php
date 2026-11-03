@@ -23,6 +23,9 @@ Route::middleware('auth')->group(function () {
         ->name('chamados.attachments.download')
         ->whereNumber('attachment');
     Route::get('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'show'])->name('chamados.show')->whereNumber('ticket');
+    Route::post('/chamados/{ticket}/mensagens', [App\Http\Controllers\ContractTicketController::class, 'storeMessage'])
+        ->name('chamados.messages.store')
+        ->whereNumber('ticket');
     Route::patch('/chamados/{ticket}', [App\Http\Controllers\ContractTicketController::class, 'update'])
         ->middleware('manager')
         ->name('chamados.update')
