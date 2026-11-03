@@ -19,8 +19,8 @@ it('only offers the three current demand categories in the create form', functio
         ->assertInertia(fn (Assert $page) => $page
             ->component('Chamados/Create')
             ->where('categories', ['novo_processo', 'compra_direta', 'renovacao'])
+            ->where('demandantes', ContractTicket::DEMANDANTES)
             ->where('currentUser.name', 'Usuário de teste')
-            ->where('currentUser.username', 'matricula123')
             ->where('today', now()->toDateString()));
 });
 
@@ -35,9 +35,9 @@ it('creates a new process with DFD data and generates its PDF without requiring 
             'subject' => 'Aquisição de equipamentos',
             'category' => 'novo_processo',
             'description' => 'Os equipamentos atuais estão obsoletos.',
-            'demandante' => 'Secretaria de Administração',
+            'demandante' => 'Coordenação de infraestrutura em TIC',
             'responsavel' => 'Outro usuário',
-            'matricula' => 'matricula-falsa',
+            'matricula' => '123456',
             'demandado' => 'Equipamentos de informática',
             'solucao_sugerida' => 'Adquirir novos equipamentos.',
             'valor_estimado' => '12500.50',
@@ -55,9 +55,9 @@ it('creates a new process with DFD data and generates its PDF without requiring 
 
     $this->assertDatabaseHas('contract_tickets', [
         'id' => $ticket->id,
-        'demandante' => 'Secretaria de Administração',
+        'demandante' => 'Coordenação de infraestrutura em TIC',
         'responsavel' => 'Maria Servidora',
-        'matricula' => 'matricula456',
+        'matricula' => '123456',
         'demandado' => 'Equipamentos de informática',
         'description' => 'Os equipamentos atuais estão obsoletos.',
         'solucao_sugerida' => 'Adquirir novos equipamentos.',
@@ -81,12 +81,24 @@ it('requires all fields needed to generate a DFD', function () {
         ])
         ->assertSessionHasErrors([
             'demandante',
+            'matricula',
             'demandado',
             'solucao_sugerida',
             'valor_estimado',
             'data_demanda',
             'duracao_contrato',
         ]);
+});
+
+it('only accepts configured demandantes for a new process', function () {
+    $this->actingAs(User::factory()->create())
+        ->post(route('chamados.store'), [
+            'subject' => 'Demanda com demandante inválido',
+            'category' => 'novo_processo',
+            'description' => 'Descrição da demanda.',
+            'demandante' => 'Secretaria de Administração',
+        ])
+        ->assertSessionHasErrors('demandante');
 });
 
 it('allows an employee to create and view their own contract ticket', function () {
@@ -133,7 +145,8 @@ it('allows an employee to create and view their own contract ticket', function (
 it('requires and stores specifications, justification, and ficha for contract requests', function (string $category) {
     $employee = User::factory()->create();
     $dfdFields = $category === 'novo_processo' ? [
-        'demandante' => 'Secretaria de Administração',
+        'demandante' => 'Coordenação de infraestrutura em TIC',
+        'matricula' => '123456',
         'demandado' => 'Serviço de suporte',
         'solucao_sugerida' => 'Contratar suporte especializado.',
         'valor_estimado' => '1500.00',
@@ -194,7 +207,7 @@ it('requires and stores specifications, justification, and ficha for contract re
     if ($category === 'novo_processo') {
         $this->assertDatabaseHas('contract_tickets', [
             'category' => $category,
-            'demandante' => 'Secretaria de Administração',
+            'demandante' => 'Coordenação de infraestrutura em TIC',
             'responsavel' => $employee->name,
         ]);
         expect((string) ContractTicket::latest('id')->firstOrFail()->valor_estimado)->toBe('1500.00');
@@ -250,7 +263,8 @@ it('requires and stores additional fichas when a request involves other secretar
         'subject' => 'Solicitação para várias secretarias',
         'category' => 'novo_processo',
         'description' => 'Descrição da solicitação.',
-        'demandante' => 'Secretaria de Administração',
+        'demandante' => 'Coordenação de infraestrutura em TIC',
+        'matricula' => '123456',
         'demandado' => 'Serviço de suporte',
         'solucao_sugerida' => 'Contratar suporte especializado.',
         'valor_estimado' => '1500.00',

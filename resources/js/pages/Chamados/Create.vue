@@ -18,7 +18,8 @@ import { computed, watch } from 'vue';
 
 const props = defineProps<{
     categories: string[];
-    currentUser: { name: string; username: string | null };
+    demandantes: string[];
+    currentUser: { name: string };
     today: string;
 }>();
 
@@ -30,6 +31,7 @@ const form = useForm<{
     category: string;
     description: string;
     demandante: string;
+    matricula: string;
     demandado: string;
     solucao_sugerida: string;
     valor_estimado: string;
@@ -50,6 +52,7 @@ const form = useForm<{
     category: '',
     description: '',
     demandante: '',
+    matricula: '',
     demandado: 'Coordenação de Inovação e Soluções Tecnológica',
     solucao_sugerida: '',
     valor_estimado: '',
@@ -264,15 +267,23 @@ const submit = () => {
                                 label="Demandante"
                                 description="Informe a secretaria, setor ou unidade que solicita a contratação."
                             />
-                            <input
+                            <select
                                 id="demandante"
                                 v-model="form.demandante"
-                                type="text"
-                                maxlength="255"
                                 required
-                                placeholder="Ex.: Secretaria Municipal de Administração"
                                 :class="fieldControlClass"
-                            />
+                            >
+                                <option value="" disabled>
+                                    Selecione a coordenação
+                                </option>
+                                <option
+                                    v-for="demandante in props.demandantes"
+                                    :key="demandante"
+                                    :value="demandante"
+                                >
+                                    {{ demandante }}
+                                </option>
+                            </select>
                             <p
                                 v-if="form.errors.demandante"
                                 class="mt-1 text-sm text-red-600"
@@ -304,21 +315,16 @@ const submit = () => {
                                 <FieldHelp
                                     field-id="matricula"
                                     label="Matrícula"
-                                    description="Usamos o usuário de rede da sua conta."
+                                    description="Informe sua matrícula funcional."
                                 />
                                 <input
                                     id="matricula"
-                                    :value="
-                                        props.currentUser.username ||
-                                        'Não cadastrada'
-                                    "
+                                    v-model="form.matricula"
                                     type="text"
-                                    readonly
-                                    disabled
-                                    :class="[
-                                        fieldControlClass,
-                                        'cursor-not-allowed opacity-70',
-                                    ]"
+                                    maxlength="100"
+                                    required
+                                    placeholder="Digite sua matrícula"
+                                    :class="fieldControlClass"
                                 />
                             </div>
                         </div>
@@ -406,8 +412,8 @@ const submit = () => {
                             <div class="space-y-1.5">
                                 <FieldHelp
                                     field-id="valor_estimado"
-                                    label="Valor"
-                                    description="Informe o valor estimado em reais."
+                                    label="Valor total"
+                                    description="Informe o valor total estimado em reais."
                                 />
                                 <input
                                     id="valor_estimado"

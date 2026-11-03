@@ -235,7 +235,7 @@ const decide = (status: string) =>
                         </div>
                         <div class="rounded-xl bg-slate-50 p-3">
                             <h2 class="mb-1 text-xs font-medium text-gray-500">
-                                Valor
+                                Valor total
                             </h2>
                             <p class="text-gray-800">
                                 {{

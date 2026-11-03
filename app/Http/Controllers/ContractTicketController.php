@@ -45,9 +45,9 @@ class ContractTicketController extends Controller
     {
         return Inertia::render('Chamados/Create', [
             'categories' => ContractTicket::CATEGORIES,
+            'demandantes' => ContractTicket::DEMANDANTES,
             'currentUser' => [
                 'name' => $request->user()->name,
-                'username' => $request->user()->username,
             ],
             'today' => now()->toDateString(),
         ]);
@@ -66,7 +66,13 @@ class ContractTicketController extends Controller
             'subject' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'in:'.implode(',', ContractTicket::CATEGORIES)],
             'description' => ['required', 'string', 'max:10000'],
-            'demandante' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:255'],
+            'demandante' => [
+                Rule::requiredIf($isNewProcess),
+                'nullable',
+                'string',
+                Rule::in(ContractTicket::DEMANDANTES),
+            ],
+            'matricula' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:100'],
             'demandado' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:255'],
             'solucao_sugerida' => [Rule::requiredIf($isNewProcess), 'nullable', 'string', 'max:10000'],
             'valor_estimado' => [
@@ -144,7 +150,7 @@ class ContractTicketController extends Controller
             'description' => $validated['description'],
             'demandante' => $isNewProcess ? $validated['demandante'] : null,
             'responsavel' => $isNewProcess ? $request->user()->name : null,
-            'matricula' => $isNewProcess ? $request->user()->username : null,
+            'matricula' => $isNewProcess ? $validated['matricula'] : null,
             'demandado' => $isNewProcess ? $validated['demandado'] : null,
             'solucao_sugerida' => $isNewProcess ? $validated['solucao_sugerida'] : null,
             'valor_estimado' => $isNewProcess ? $validated['valor_estimado'] : null,

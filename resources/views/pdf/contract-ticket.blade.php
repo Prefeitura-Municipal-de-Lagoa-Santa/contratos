@@ -231,7 +231,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <span class="label">Valor estimado</span>
+                    <span class="label">Valor total</span>
                     <span class="value">R$ {{ number_format((float) $ticket->valor_estimado, 2, ',', '.') }}</span>
                 </td>
             </tr>
