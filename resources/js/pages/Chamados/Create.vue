@@ -7,6 +7,7 @@ import {
     ArrowLeft,
     CheckCircle2,
     ChevronDown,
+    FileDown,
     LifeBuoy,
     Paperclip,
     Send,
@@ -15,9 +16,11 @@ import {
 } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
-const props = defineProps({
-    categories: Array,
-});
+const props = defineProps<{
+    categories: string[];
+    currentUser: { name: string; username: string | null };
+    today: string;
+}>();
 
 const fieldControlClass =
     'w-full rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-3.5 font-sans text-[15px] font-normal leading-6 tracking-[0.01em] text-slate-800 shadow-sm shadow-slate-900/[0.03] transition duration-200 placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 hover:border-indigo-200 hover:bg-white focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-700 dark:hover:bg-slate-800';
@@ -26,6 +29,12 @@ const form = useForm<{
     subject: string;
     category: string;
     description: string;
+    demandante: string;
+    demandado: string;
+    solucao_sugerida: string;
+    valor_estimado: string;
+    data_demanda: string;
+    duracao_contrato: string;
     specifications: string;
     justification: string;
     quantity: string;
@@ -40,6 +49,12 @@ const form = useForm<{
     subject: '',
     category: '',
     description: '',
+    demandante: '',
+    demandado: '',
+    solucao_sugerida: '',
+    valor_estimado: '',
+    data_demanda: props.today,
+    duracao_contrato: '',
     specifications: '',
     justification: '',
     quantity: '',
@@ -55,6 +70,7 @@ const form = useForm<{
 const needsContractDetails = computed(() =>
     ['novo_processo', 'compra_direta'].includes(form.category),
 );
+const isNewProcess = computed(() => form.category === 'novo_processo');
 
 const sanitizeNumericInput = (
     event: Event,
@@ -110,7 +126,23 @@ const submit = () => {
         return;
     }
 
-    form.post('/chamados', { forceFormData: true });
+    form.post('/chamados', {
+        forceFormData: true,
+        onSuccess: (page) => {
+            if (!isNewProcess.value) {
+                return;
+            }
+
+            const ticketId = new URL(
+                page.url,
+                window.location.origin,
+            ).pathname.match(/^\/chamados\/(\d+)$/)?.[1];
+
+            if (ticketId) {
+                window.location.assign(`/chamados/${ticketId}/pdf`);
+            }
+        },
+    });
 };
 </script>
 
@@ -224,6 +256,208 @@ const submit = () => {
                             {{ form.errors.category }}
                         </p>
                     </div>
+
+                    <template v-if="isNewProcess">
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="demandante"
+                                label="Demandante"
+                                description="Informe a secretaria, setor ou unidade que solicita a contratação."
+                            />
+                            <input
+                                id="demandante"
+                                v-model="form.demandante"
+                                type="text"
+                                maxlength="255"
+                                required
+                                placeholder="Ex.: Secretaria Municipal de Administração"
+                                :class="fieldControlClass"
+                            />
+                            <p
+                                v-if="form.errors.demandante"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.demandante }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="space-y-1.5">
+                                <FieldHelp
+                                    field-id="responsavel"
+                                    label="Responsável"
+                                    description="Preenchido automaticamente com o usuário conectado."
+                                />
+                                <input
+                                    id="responsavel"
+                                    :value="props.currentUser.name"
+                                    type="text"
+                                    readonly
+                                    :class="fieldControlClass"
+                                />
+                            </div>
+                            <div class="space-y-1.5">
+                                <FieldHelp
+                                    field-id="matricula"
+                                    label="Matrícula"
+                                    description="Usamos o usuário de rede da sua conta."
+                                />
+                                <input
+                                    id="matricula"
+                                    :value="
+                                        props.currentUser.username ||
+                                        'Não cadastrada'
+                                    "
+                                    type="text"
+                                    readonly
+                                    :class="fieldControlClass"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="demandado"
+                                label="Demandado"
+                                description="Informe o objeto, serviço ou fornecedor relacionado à demanda."
+                            />
+                            <input
+                                id="demandado"
+                                v-model="form.demandado"
+                                type="text"
+                                maxlength="255"
+                                required
+                                placeholder="Informe o que será contratado."
+                                :class="fieldControlClass"
+                            />
+                            <p
+                                v-if="form.errors.demandado"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.demandado }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="description"
+                                label="Problema Identificado"
+                                description="Descreva a necessidade ou problema que motiva esta demanda."
+                            />
+                            <textarea
+                                id="description"
+                                v-model="form.description"
+                                rows="6"
+                                maxlength="10000"
+                                required
+                                placeholder="Descreva o problema ou necessidade identificada."
+                                :class="[
+                                    fieldControlClass,
+                                    'resize-y leading-6',
+                                ]"
+                            />
+                            <p
+                                v-if="form.errors.description"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.description }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <FieldHelp
+                                field-id="solucao_sugerida"
+                                label="Solução sugerida"
+                                description="Descreva a solução proposta para atender à necessidade."
+                            />
+                            <textarea
+                                id="solucao_sugerida"
+                                v-model="form.solucao_sugerida"
+                                rows="4"
+                                maxlength="10000"
+                                required
+                                placeholder="Descreva a solução sugerida."
+                                :class="[
+                                    fieldControlClass,
+                                    'resize-y leading-6',
+                                ]"
+                            />
+                            <p
+                                v-if="form.errors.solucao_sugerida"
+                                class="mt-1 text-sm text-red-600"
+                            >
+                                {{ form.errors.solucao_sugerida }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="space-y-1.5">
+                                <FieldHelp
+                                    field-id="valor_estimado"
+                                    label="Valor"
+                                    description="Informe o valor estimado em reais."
+                                />
+                                <input
+                                    id="valor_estimado"
+                                    v-model="form.valor_estimado"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                    placeholder="0,00"
+                                    :class="fieldControlClass"
+                                />
+                                <p
+                                    v-if="form.errors.valor_estimado"
+                                    class="mt-1 text-sm text-red-600"
+                                >
+                                    {{ form.errors.valor_estimado }}
+                                </p>
+                            </div>
+                            <div class="space-y-1.5">
+                                <FieldHelp
+                                    field-id="data_demanda"
+                                    label="Data"
+                                    description="Data prevista ou de referência da demanda."
+                                />
+                                <input
+                                    id="data_demanda"
+                                    v-model="form.data_demanda"
+                                    type="date"
+                                    required
+                                    :class="fieldControlClass"
+                                />
+                                <p
+                                    v-if="form.errors.data_demanda"
+                                    class="mt-1 text-sm text-red-600"
+                                >
+                                    {{ form.errors.data_demanda }}
+                                </p>
+                            </div>
+                            <div class="space-y-1.5">
+                                <FieldHelp
+                                    field-id="duracao_contrato"
+                                    label="Duração do contrato"
+                                    description="Informe o prazo estimado de vigência."
+                                />
+                                <input
+                                    id="duracao_contrato"
+                                    v-model="form.duracao_contrato"
+                                    type="text"
+                                    maxlength="100"
+                                    required
+                                    placeholder="Ex.: 12 meses"
+                                    :class="fieldControlClass"
+                                />
+                                <p
+                                    v-if="form.errors.duracao_contrato"
+                                    class="mt-1 text-sm text-red-600"
+                                >
+                                    {{ form.errors.duracao_contrato }}
+                                </p>
+                            </div>
+                        </div>
+                    </template>
 
                     <template v-if="needsContractDetails">
                         <div class="space-y-1.5">
@@ -550,7 +784,10 @@ const submit = () => {
                         </template>
                     </template>
 
-                    <div v-if="form.in_pca !== false" class="space-y-1.5">
+                    <div
+                        v-if="form.in_pca !== false && !isNewProcess"
+                        class="space-y-1.5"
+                    >
                         <FieldHelp
                             field-id="description"
                             label="Detalhes da demanda"
@@ -573,11 +810,11 @@ const submit = () => {
                         </p>
                     </div>
 
-                    <div v-if="form.in_pca !== false">
+                    <div v-if="form.in_pca !== false && !isNewProcess">
                         <FieldHelp
                             field-id="attachments"
                             label="Anexos (obrigatório)"
-                            description="Anexe o DFD (Documento de Formalização da Demanda) neste campo. O envio de pelo menos um arquivo PDF é obrigatório."
+                            description="Anexe ao menos um arquivo PDF relacionado à demanda."
                         />
                         <label
                             for="attachments"
@@ -596,7 +833,7 @@ const submit = () => {
                             <span
                                 class="mt-1 text-xs text-slate-500 dark:text-slate-400"
                             >
-                                Anexe o DFD em PDF · obrigatório
+                                Arquivo PDF · obrigatório
                             </span>
                             <input
                                 id="attachments"
@@ -679,15 +916,26 @@ const submit = () => {
                                 "
                                 class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-indigo-600/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                             >
-                                <Send v-if="!form.processing" class="h-4 w-4" />
+                                <FileDown
+                                    v-if="!form.processing && isNewProcess"
+                                    class="h-4 w-4"
+                                />
+                                <Send
+                                    v-else-if="!form.processing"
+                                    class="h-4 w-4"
+                                />
                                 <CheckCircle2
                                     v-else
                                     class="h-4 w-4 animate-pulse"
                                 />
                                 {{
                                     form.processing
-                                        ? 'Enviando...'
-                                        : 'Enviar Demanda'
+                                        ? isNewProcess
+                                            ? 'Gerando DFD...'
+                                            : 'Enviando...'
+                                        : isNewProcess
+                                          ? 'Criar demanda e gerar DFD em PDF'
+                                          : 'Enviar Demanda'
                                 }}
                             </button>
                         </div>

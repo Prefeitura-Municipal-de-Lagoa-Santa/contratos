@@ -180,13 +180,16 @@
             'aprovado' => 'Aprovado',
             'recusado' => 'Recusado',
         ];
+        $isDfd = $ticket->category === 'novo_processo';
     @endphp
 
     <div class="top-rule"></div>
 
     <header class="document-header">
-        <div class="eyebrow">Gestão de Contratos · Documento de acompanhamento</div>
-        <h1>Demanda #{{ $ticket->id }}</h1>
+        <div class="eyebrow">
+            {{ $isDfd ? 'Documento de Formalização da Demanda' : 'Gestão de Contratos · Documento de acompanhamento' }}
+        </div>
+        <h1>{{ $isDfd ? 'DFD' : 'Demanda #'.$ticket->id }}</h1>
         <p class="subject">{{ $ticket->subject }}</p>
         <div class="badges">
             <span class="badge">{{ $categories[$ticket->category] ?? $ticket->category }}</span>
@@ -195,32 +198,78 @@
     </header>
 
     <table class="meta">
-        <tr>
-            <td>
-                <span class="label">Solicitante</span>
-                <span class="value">{{ $ticket->user->name }}</span>
-            </td>
-            <td>
-                <span class="label">Responsável</span>
-                <span class="value">{{ $ticket->responsible?->name ?? 'Não definido' }}</span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span class="label">Data de abertura</span>
-                <span class="value">{{ $ticket->created_at->format('d/m/Y H:i') }}</span>
-            </td>
-            <td>
-                <span class="label">Tipo de demanda</span>
-                <span class="value">{{ $categories[$ticket->category] ?? $ticket->category }}</span>
-            </td>
-        </tr>
+        @if ($isDfd)
+            <tr>
+                <td>
+                    <span class="label">Demandante</span>
+                    <span class="value">{{ $ticket->demandante }}</span>
+                </td>
+                <td>
+                    <span class="label">Demandado</span>
+                    <span class="value">{{ $ticket->demandado }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Responsável</span>
+                    <span class="value">{{ $ticket->responsavel }}</span>
+                </td>
+                <td>
+                    <span class="label">Matrícula</span>
+                    <span class="value">{{ $ticket->matricula ?: 'Não cadastrada' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Data</span>
+                    <span class="value">{{ $ticket->data_demanda?->format('d/m/Y') }}</span>
+                </td>
+                <td>
+                    <span class="label">Duração do contrato</span>
+                    <span class="value">{{ $ticket->duracao_contrato }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="label">Valor estimado</span>
+                    <span class="value">R$ {{ number_format((float) $ticket->valor_estimado, 2, ',', '.') }}</span>
+                </td>
+            </tr>
+        @else
+            <tr>
+                <td>
+                    <span class="label">Solicitante</span>
+                    <span class="value">{{ $ticket->user->name }}</span>
+                </td>
+                <td>
+                    <span class="label">Responsável</span>
+                    <span class="value">{{ $ticket->responsible?->name ?? 'Não definido' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Data de abertura</span>
+                    <span class="value">{{ $ticket->created_at->format('d/m/Y H:i') }}</span>
+                </td>
+                <td>
+                    <span class="label">Tipo de demanda</span>
+                    <span class="value">{{ $categories[$ticket->category] ?? $ticket->category }}</span>
+                </td>
+            </tr>
+        @endif
     </table>
 
     <section class="section">
-        <h2 class="section-title">Descrição</h2>
+        <h2 class="section-title">{{ $isDfd ? 'Problema identificado' : 'Descrição' }}</h2>
         <p class="section-content">{{ $ticket->description }}</p>
     </section>
+
+    @if ($ticket->solucao_sugerida)
+        <section class="section">
+            <h2 class="section-title">Solução sugerida</h2>
+            <p class="section-content">{{ $ticket->solucao_sugerida }}</p>
+        </section>
+    @endif
 
     @if ($ticket->specifications)
         <section class="section">

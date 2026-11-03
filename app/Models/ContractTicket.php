@@ -43,6 +43,14 @@ class ContractTicket extends Model
         'justification',
         'quantity',
         'unit',
+        'demandante',
+        'responsavel',
+        'matricula',
+        'demandado',
+        'solucao_sugerida',
+        'valor_estimado',
+        'data_demanda',
+        'duracao_contrato',
         'ficha',
         'dotacao',
         'in_pca',
@@ -58,6 +66,8 @@ class ContractTicket extends Model
             'in_pca' => 'boolean',
             'involves_other_secretariats' => 'boolean',
             'other_fichas' => 'array',
+            'valor_estimado' => 'decimal:2',
+            'data_demanda' => 'date',
         ];
     }
 
@@ -74,5 +84,10 @@ class ContractTicket extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(ContractTicketAttachment::class);
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(ContractTicketMessage::class, 'contract_ticket_id');
     }
 }
