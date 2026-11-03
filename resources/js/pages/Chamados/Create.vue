@@ -50,7 +50,7 @@ const form = useForm<{
     category: '',
     description: '',
     demandante: '',
-    demandado: '',
+    demandado: 'Coordenação de Inovação e Soluções Tecnológica',
     solucao_sugerida: '',
     valor_estimado: '',
     data_demanda: props.today,
@@ -293,7 +293,11 @@ const submit = () => {
                                     :value="props.currentUser.name"
                                     type="text"
                                     readonly
-                                    :class="fieldControlClass"
+                                    disabled
+                                    :class="[
+                                        fieldControlClass,
+                                        'cursor-not-allowed opacity-70',
+                                    ]"
                                 />
                             </div>
                             <div class="space-y-1.5">
@@ -310,7 +314,11 @@ const submit = () => {
                                     "
                                     type="text"
                                     readonly
-                                    :class="fieldControlClass"
+                                    disabled
+                                    :class="[
+                                        fieldControlClass,
+                                        'cursor-not-allowed opacity-70',
+                                    ]"
                                 />
                             </div>
                         </div>
@@ -319,7 +327,7 @@ const submit = () => {
                             <FieldHelp
                                 field-id="demandado"
                                 label="Demandado"
-                                description="Informe o objeto, serviço ou fornecedor relacionado à demanda."
+                                description="Setor que tem a capacidade de analisar a demanda e realizar estudo da solução."
                             />
                             <input
                                 id="demandado"
@@ -327,8 +335,12 @@ const submit = () => {
                                 type="text"
                                 maxlength="255"
                                 required
+                                disabled
                                 placeholder="Informe o que será contratado."
-                                :class="fieldControlClass"
+                                :class="[
+                                    fieldControlClass,
+                                    'cursor-not-allowed opacity-70',
+                                ]"
                             />
                             <p
                                 v-if="form.errors.demandado"
@@ -934,7 +946,7 @@ const submit = () => {
                                             ? 'Gerando DFD...'
                                             : 'Enviando...'
                                         : isNewProcess
-                                          ? 'Criar demanda e gerar DFD em PDF'
+                                          ? 'Criar demanda'
                                           : 'Enviar Demanda'
                                 }}
                             </button>
